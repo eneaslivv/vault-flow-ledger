@@ -179,7 +179,7 @@ const Stock = () => {
                       <TableCell>
                         <div className="flex gap-2">
                           <Button variant="ghost" size="icon">
-                            <Transfer className="h-4 w-4" />
+                            <ArrowRightLeft className="h-4 w-4" />
                           </Button>
                           <Button variant="ghost" size="icon">
                             <Gift className="h-4 w-4" />

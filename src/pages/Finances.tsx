@@ -1,3 +1,4 @@
+
 import { useState } from "react";
 import { PageHeader } from "@/components/PageHeader";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
@@ -63,7 +64,7 @@ const Finances = () => {
           title="Transferencias Especiales"
           value="79"
           description="Valor estimado: $15,800"
-          icon={<Transfer className="h-4 w-4" />}
+          icon={<ArrowRightLeft className="h-4 w-4" />}
           className={colSpan}
         />
         <StatsCard
