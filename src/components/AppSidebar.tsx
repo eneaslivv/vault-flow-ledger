@@ -14,6 +14,7 @@ import {
   SidebarMenuButton,
 } from "@/components/ui/sidebar";
 import { 
+  ArrowRightLeft,
   BarChart,
   Briefcase,
   CreditCard,
@@ -22,7 +23,6 @@ import {
   Home,
   Settings,
   ShoppingCart,
-  Transfer,
   User,
   Users
 } from "lucide-react";
@@ -33,7 +33,7 @@ const mainNavItems = [
   { title: "Dashboard", icon: Home, path: "/" },
   { title: "Finanzas", icon: DollarSign, path: "/finances" },
   { title: "Stock", icon: Database, path: "/stock" },
-  { title: "Transferencias", icon: Transfer, path: "/transfers" },
+  { title: "Transferencias", icon: ArrowRightLeft, path: "/transfers" },
   { title: "Monedas & Saldos", icon: CreditCard, path: "/balances" },
 ];
 

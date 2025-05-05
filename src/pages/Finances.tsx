@@ -1,4 +1,3 @@
-
 import { useState } from "react";
 import { PageHeader } from "@/components/PageHeader";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
@@ -6,7 +5,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { StatsCard } from "@/components/StatsCard";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Button } from "@/components/ui/button";
-import { Banknote, CreditCard, Transfer, User, Archive } from "lucide-react";
+import { Banknote, CreditCard, ArrowRightLeft, User, Archive } from "lucide-react";
 import { useIsMobile } from "@/hooks/use-mobile";
 
 // Mock data for the financial sources

@@ -12,7 +12,7 @@ import {
   Gift, 
   Search,
   ShoppingCart,
-  Transfer
+  ArrowRightLeft
 } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
@@ -69,7 +69,7 @@ const Stock = () => {
         description="Control de inventario, cortesías y transferencias"
       >
         <Button className="mr-2">
-          <Transfer className="mr-2 h-4 w-4" />
+          <ArrowRightLeft className="mr-2 h-4 w-4" />
           Nueva Transferencia
         </Button>
         <Button>

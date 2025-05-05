@@ -11,7 +11,7 @@ import {
   Box, 
   Search,
   Filter,
-  Transfer
+  ArrowRightLeft
 } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
@@ -121,7 +121,7 @@ const Transfers = () => {
         description="Gestión de movimientos internos de stock"
       >
         <Button>
-          <Transfer className="mr-2 h-4 w-4" />
+          <ArrowRightLeft className="mr-2 h-4 w-4" />
           Nueva Transferencia
         </Button>
       </PageHeader>

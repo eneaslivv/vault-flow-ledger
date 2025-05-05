@@ -7,13 +7,13 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { useToast } from "@/hooks/use-toast";
 import { useIsMobile } from "@/hooks/use-mobile";
 import {
+  ArrowRightLeft,
   CreditCard,
   DollarSign,
   ShoppingCart,
   ArrowRight,
   Box,
   User,
-  Transfer,
 } from "lucide-react";
 
 // Mock data
@@ -77,7 +77,7 @@ const Dashboard = () => {
           value="235"
           description="Últimos 30 días"
           trend={{ value: 16, positive: true }}
-          icon={<Transfer className="h-4 w-4" />}
+          icon={<ArrowRightLeft className="h-4 w-4" />}
           className={colSpan}
         />
 

@@ -1,4 +1,3 @@
-
 import { useState } from "react";
 import { PageHeader } from "@/components/PageHeader";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
@@ -10,7 +9,7 @@ import {
   Briefcase,
   DollarSign,
   Search,
-  Transfer,
+  ArrowRightLeft,
   User,
 } from "lucide-react";
 import { Input } from "@/components/ui/input";
@@ -298,7 +297,7 @@ const Bars = () => {
                   <TableCell>
                     {item.activity.includes("Transferencia") ? (
                       <Button variant="ghost" size="icon">
-                        <Transfer className="h-4 w-4" />
+                        <ArrowRightLeft className="h-4 w-4" />
                       </Button>
                     ) : item.activity.includes("Venta") ? (
                       <Button variant="ghost" size="icon">
