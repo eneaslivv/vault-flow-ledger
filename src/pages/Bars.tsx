@@ -1,322 +1,223 @@
+
 import { useState } from "react";
 import { PageHeader } from "@/components/PageHeader";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { 
-  Box, 
-  Briefcase,
-  DollarSign,
-  Search,
-  ArrowRightLeft,
-  User,
-} from "lucide-react";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Input } from "@/components/ui/input";
+import { 
+  BarChart,
+  QrCode,
+  ArrowRightLeft,
+  CreditCard,
+  DollarSign,
+  Tag,
+  BoxesIcon,
+} from "lucide-react";
+import { StatsCard } from "@/components/StatsCard";
+import { useIsMobile } from "@/hooks/use-mobile";
+import { IncomePanel } from "@/components/bars/IncomePanel";
+import { StockReentry } from "@/components/bars/StockReentry";
+import { CustomDrinks } from "@/components/bars/CustomDrinks";
+import { StockTransfers } from "@/components/bars/StockTransfers";
 
-// Mock data for bars
-const barsData = [
-  { 
-    id: 1, 
-    name: "Bar Central", 
-    location: "Centro, Ciudad",
-    status: "Abierto",
-    stockTotal: "548",
-    sales: "$45,800",
-    transfers: {
-      in: "45",
-      out: "135",
-      balance: "-90"
-    },
-    staff: "12"
-  },
-  { 
-    id: 2, 
-    name: "Bar Norte", 
-    location: "Zona Norte, Ciudad",
-    status: "Abierto",
-    stockTotal: "325",
-    sales: "$32,400",
-    transfers: {
-      in: "120",
-      out: "85",
-      balance: "+35"
-    },
-    staff: "8"
-  },
-  { 
-    id: 3, 
-    name: "Bar Sur", 
-    location: "Zona Sur, Ciudad",
-    status: "Cerrado",
-    stockTotal: "412",
-    sales: "$28,600",
-    transfers: {
-      in: "75",
-      out: "95",
-      balance: "-20"
-    },
-    staff: "10"
-  },
-  { 
-    id: 4, 
-    name: "El Alamo", 
-    location: "Zona Oeste, Ciudad",
-    status: "Abierto",
-    stockTotal: "380",
-    sales: "$38,750",
-    transfers: {
-      in: "135",
-      out: "60",
-      balance: "+75"
-    },
-    staff: "15"
-  },
+// Mock data for QR performance
+const qrPerformanceData = [
+  { id: 1, qrCode: "QR-BAR-CENTRAL-01", location: "Barra Central (Entrada)", scans: 523, orders: 487, revenue: "$43,850" },
+  { id: 2, qrCode: "QR-BAR-CENTRAL-02", location: "Barra Central (VIP)", scans: 289, orders: 254, revenue: "$35,200" },
+  { id: 3, qrCode: "QR-BAR-NORTE-01", location: "Barra Norte (General)", scans: 478, orders: 412, revenue: "$38,750" },
+  { id: 4, qrCode: "QR-EL-ALAMO-01", location: "El Alamo (Entrada)", scans: 356, orders: 320, revenue: "$29,600" },
+  { id: 5, qrCode: "QR-BAR-SUR-01", location: "Barra Sur (General)", scans: 298, orders: 265, revenue: "$24,800" },
 ];
 
-// Mock data for bar activity
-const barActivityData = [
-  {
-    id: 1,
-    bar: "Bar Central",
-    activity: "Transferencia saliente",
-    details: "50 Agua Mineral a El Alamo",
-    date: "2023-05-02",
-    time: "14:30"
-  },
-  {
-    id: 2,
-    bar: "Bar Norte",
-    activity: "Venta",
-    details: "245 productos vendidos",
-    date: "2023-05-02",
-    time: "22:45"
-  },
-  {
-    id: 3,
-    bar: "El Alamo",
-    activity: "Transferencia entrante",
-    details: "50 Agua Mineral desde Bar Central",
-    date: "2023-05-02",
-    time: "15:15"
-  },
-  {
-    id: 4,
-    bar: "Bar Sur",
-    activity: "Actualización de Stock",
-    details: "Recepción de 120 unidades nuevas",
-    date: "2023-05-01",
-    time: "10:30"
-  },
-  {
-    id: 5,
-    bar: "Bar Central",
-    activity: "Cortesía",
-    details: "2 Champagne para mesa VIP",
-    date: "2023-05-01",
-    time: "21:15"
-  },
+// Mock data for bar staff
+const barStaffData = [
+  { id: 1, name: "Juan García", role: "Bartender Principal", bar: "Bar Central", shift: "19:00 - 02:00", performance: "97%" },
+  { id: 2, name: "María López", role: "Bartender", bar: "Bar Norte", shift: "19:00 - 02:00", performance: "94%" },
+  { id: 3, name: "Carlos Ruiz", role: "Bartender Asistente", bar: "Bar Central", shift: "22:00 - 05:00", performance: "91%" },
+  { id: 4, name: "Ana Martínez", role: "Bartender", bar: "El Alamo", shift: "19:00 - 02:00", performance: "95%" },
+  { id: 5, name: "Roberto Sánchez", role: "Bartender Principal", bar: "Bar Sur", shift: "22:00 - 05:00", performance: "93%" },
 ];
 
 const Bars = () => {
-  const [searchTerm, setSearchTerm] = useState("");
-  
-  // Filter bars data based on search
-  const filteredBars = barsData.filter(item => {
-    const matchesSearch = 
-      item.name.toLowerCase().includes(searchTerm.toLowerCase()) || 
-      item.location.toLowerCase().includes(searchTerm.toLowerCase());
-    return matchesSearch;
-  });
-  
-  // Filter activity data based on search
-  const filteredActivity = barActivityData.filter(item => {
-    return searchTerm === "" || item.bar.toLowerCase().includes(searchTerm.toLowerCase());
-  });
+  const isMobile = useIsMobile();
+  const colSpan = isMobile ? "col-span-12" : "col-span-3";
+  const [selectedBar, setSelectedBar] = useState("all");
   
   return (
     <>
       <PageHeader 
-        title="Gestión de Bares" 
-        description="Administración de locales, stock e inventario"
+        title="Gestión de Barras & QRs" 
+        description="Control de barras, QRs, ingresos y transferencias"
       >
         <Button>
-          <Briefcase className="mr-2 h-4 w-4" />
-          Nuevo Bar
+          <QrCode className="mr-2 h-4 w-4" />
+          Generar Nuevo QR
         </Button>
       </PageHeader>
 
-      <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mb-6">
-        <Card>
-          <CardHeader className="pb-2">
-            <CardTitle className="text-lg">Bares</CardTitle>
-            <CardDescription>Total</CardDescription>
-          </CardHeader>
-          <CardContent>
-            <div className="text-3xl font-bold">4</div>
-            <p className="text-sm text-muted-foreground">3 activos, 1 inactivo</p>
-          </CardContent>
-        </Card>
-        
-        <Card>
-          <CardHeader className="pb-2">
-            <CardTitle className="text-lg">Stock Total</CardTitle>
-            <CardDescription>Todos los bares</CardDescription>
-          </CardHeader>
-          <CardContent>
-            <div className="text-3xl font-bold">1,665</div>
-            <p className="text-sm text-muted-foreground">Valor: $245,800</p>
-          </CardContent>
-        </Card>
-        
-        <Card>
-          <CardHeader className="pb-2">
-            <CardTitle className="text-lg">Ventas Totales</CardTitle>
-            <CardDescription>Último mes</CardDescription>
-          </CardHeader>
-          <CardContent>
-            <div className="text-3xl font-bold">$145,550</div>
-            <p className="text-sm text-muted-foreground">3,245 transacciones</p>
-          </CardContent>
-        </Card>
-        
-        <Card>
-          <CardHeader className="pb-2">
-            <CardTitle className="text-lg">Personal</CardTitle>
-            <CardDescription>Total activo</CardDescription>
-          </CardHeader>
-          <CardContent>
-            <div className="text-3xl font-bold">45</div>
-            <p className="text-sm text-muted-foreground">En todos los bares</p>
-          </CardContent>
-        </Card>
-      </div>
-
-      <div className="relative mb-6">
-        <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground" />
-        <Input
-          placeholder="Buscar bares..."
-          className="pl-8"
-          value={searchTerm}
-          onChange={(e) => setSearchTerm(e.target.value)}
+      <div className="grid grid-cols-12 gap-4 mb-6">
+        <StatsCard
+          title="Total Ingresos"
+          value="$172,200"
+          description="Todas las barras"
+          icon={<DollarSign className="h-4 w-4" />}
+          className={colSpan}
+        />
+        <StatsCard
+          title="Escaneos QR"
+          value="1,944"
+          description="Conversión: 89%"
+          icon={<QrCode className="h-4 w-4" />}
+          className={colSpan}
+        />
+        <StatsCard
+          title="Transferencias"
+          value="53"
+          description="Entre barras"
+          icon={<ArrowRightLeft className="h-4 w-4" />}
+          className={colSpan}
+        />
+        <StatsCard
+          title="Reingresos"
+          value="28"
+          description="Al stock disponible"
+          icon={<BoxesIcon className="h-4 w-4" />}
+          className={colSpan}
         />
       </div>
 
-      <Card className="mb-6">
-        <CardHeader>
-          <CardTitle>Bares y Locales</CardTitle>
-          <CardDescription>Información general de todos los locales</CardDescription>
-        </CardHeader>
-        <CardContent>
-          <Table>
-            <TableHeader>
-              <TableRow>
-                <TableHead>Nombre</TableHead>
-                <TableHead>Ubicación</TableHead>
-                <TableHead>Estado</TableHead>
-                <TableHead>Stock</TableHead>
-                <TableHead>Ventas</TableHead>
-                <TableHead>Balance Transferencias</TableHead>
-                <TableHead>Personal</TableHead>
-                <TableHead>Acciones</TableHead>
-              </TableRow>
-            </TableHeader>
-            <TableBody>
-              {filteredBars.map(item => (
-                <TableRow key={item.id}>
-                  <TableCell className="font-medium">{item.name}</TableCell>
-                  <TableCell>{item.location}</TableCell>
-                  <TableCell>
-                    <Badge 
-                      variant="outline" 
-                      className={item.status === "Abierto" 
-                        ? "bg-green-50 text-green-700 border-green-200" 
-                        : "bg-red-50 text-red-700 border-red-200"
-                      }
-                    >
-                      {item.status}
-                    </Badge>
-                  </TableCell>
-                  <TableCell>{item.stockTotal}</TableCell>
-                  <TableCell>{item.sales}</TableCell>
-                  <TableCell>
-                    <span className={
-                      item.transfers.balance.startsWith("+")
-                        ? "text-green-600"
-                        : "text-red-600"
-                    }>
-                      {item.transfers.balance}
-                    </span>
-                  </TableCell>
-                  <TableCell>{item.staff}</TableCell>
-                  <TableCell>
-                    <div className="flex gap-2">
-                      <Button variant="ghost" size="icon">
-                        <Box className="h-4 w-4" />
-                      </Button>
-                      <Button variant="ghost" size="icon">
-                        <DollarSign className="h-4 w-4" />
-                      </Button>
-                      <Button variant="ghost" size="icon">
-                        <User className="h-4 w-4" />
-                      </Button>
-                    </div>
-                  </TableCell>
-                </TableRow>
-              ))}
-            </TableBody>
-          </Table>
-        </CardContent>
-      </Card>
-      
       <Card>
         <CardHeader>
-          <CardTitle>Actividad Reciente</CardTitle>
-          <CardDescription>Últimas acciones en los bares</CardDescription>
+          <CardTitle>Gestión de Barras</CardTitle>
+          <CardDescription>Ingresos, stock, transferencias y personal</CardDescription>
         </CardHeader>
         <CardContent>
-          <Table>
-            <TableHeader>
-              <TableRow>
-                <TableHead>Bar</TableHead>
-                <TableHead>Actividad</TableHead>
-                <TableHead>Detalles</TableHead>
-                <TableHead>Fecha</TableHead>
-                <TableHead>Hora</TableHead>
-                <TableHead>Acciones</TableHead>
-              </TableRow>
-            </TableHeader>
-            <TableBody>
-              {filteredActivity.map(item => (
-                <TableRow key={item.id}>
-                  <TableCell className="font-medium">{item.bar}</TableCell>
-                  <TableCell>{item.activity}</TableCell>
-                  <TableCell>{item.details}</TableCell>
-                  <TableCell>{item.date}</TableCell>
-                  <TableCell>{item.time}</TableCell>
-                  <TableCell>
-                    {item.activity.includes("Transferencia") ? (
-                      <Button variant="ghost" size="icon">
-                        <ArrowRightLeft className="h-4 w-4" />
-                      </Button>
-                    ) : item.activity.includes("Venta") ? (
-                      <Button variant="ghost" size="icon">
-                        <DollarSign className="h-4 w-4" />
-                      </Button>
-                    ) : item.activity.includes("Stock") ? (
-                      <Button variant="ghost" size="icon">
-                        <Box className="h-4 w-4" />
-                      </Button>
-                    ) : (
-                      <Button variant="ghost" size="icon">
-                        <User className="h-4 w-4" />
-                      </Button>
-                    )}
-                  </TableCell>
-                </TableRow>
-              ))}
-            </TableBody>
-          </Table>
+          <div className="flex flex-col md:flex-row gap-4 mb-4">
+            <Select value={selectedBar} onValueChange={setSelectedBar}>
+              <SelectTrigger className="w-full md:w-[200px]">
+                <SelectValue placeholder="Seleccionar bar" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="all">Todas las barras</SelectItem>
+                <SelectItem value="barCentral">Barra Central</SelectItem>
+                <SelectItem value="barNorte">Barra Norte</SelectItem>
+                <SelectItem value="barSur">Barra Sur</SelectItem>
+                <SelectItem value="elAlamo">El Alamo</SelectItem>
+              </SelectContent>
+            </Select>
+            <div className="relative flex-1">
+              <Input placeholder="Buscar por QR, staff o producto..." />
+            </div>
+          </div>
+        
+          <Tabs defaultValue="income">
+            <TabsList className="grid w-full grid-cols-5">
+              <TabsTrigger value="income">Ingresos</TabsTrigger>
+              <TabsTrigger value="reentry">Reingresos</TabsTrigger>
+              <TabsTrigger value="customDrinks">Tragos Custom</TabsTrigger>
+              <TabsTrigger value="transfers">Transferencias</TabsTrigger>
+              <TabsTrigger value="details">Detalle de Barras</TabsTrigger>
+            </TabsList>
+            
+            {/* Ingresos Panel */}
+            <TabsContent value="income">
+              <IncomePanel selectedBar={selectedBar} />
+            </TabsContent>
+            
+            {/* Reingresos Panel */}
+            <TabsContent value="reentry">
+              <StockReentry selectedBar={selectedBar} />
+            </TabsContent>
+            
+            {/* Tragos Custom Panel */}
+            <TabsContent value="customDrinks">
+              <CustomDrinks selectedBar={selectedBar} />
+            </TabsContent>
+            
+            {/* Transferencias Panel */}
+            <TabsContent value="transfers">
+              <StockTransfers selectedBar={selectedBar} />
+            </TabsContent>
+            
+            {/* Detalle de Barras */}
+            <TabsContent value="details">
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
+                <Card>
+                  <CardHeader className="pb-2">
+                    <CardTitle className="text-lg">Performance de QRs</CardTitle>
+                    <CardDescription>Escaneos y conversión por código QR</CardDescription>
+                  </CardHeader>
+                  <CardContent>
+                    <Table>
+                      <TableHeader>
+                        <TableRow>
+                          <TableHead>QR</TableHead>
+                          <TableHead>Ubicación</TableHead>
+                          <TableHead>Escaneos</TableHead>
+                          <TableHead>Pedidos</TableHead>
+                          <TableHead>Ingresos</TableHead>
+                        </TableRow>
+                      </TableHeader>
+                      <TableBody>
+                        {qrPerformanceData
+                          .filter(item => selectedBar === "all" || item.location.toLowerCase().includes(selectedBar.toLowerCase()))
+                          .map(qr => (
+                            <TableRow key={qr.id}>
+                              <TableCell className="font-medium">{qr.qrCode}</TableCell>
+                              <TableCell>{qr.location}</TableCell>
+                              <TableCell>{qr.scans}</TableCell>
+                              <TableCell>{qr.orders}</TableCell>
+                              <TableCell>{qr.revenue}</TableCell>
+                            </TableRow>
+                          ))}
+                      </TableBody>
+                    </Table>
+                  </CardContent>
+                </Card>
+                
+                <Card>
+                  <CardHeader className="pb-2">
+                    <CardTitle className="text-lg">Personal por Barra</CardTitle>
+                    <CardDescription>Staff asignado a cada barra</CardDescription>
+                  </CardHeader>
+                  <CardContent>
+                    <Table>
+                      <TableHeader>
+                        <TableRow>
+                          <TableHead>Nombre</TableHead>
+                          <TableHead>Rol</TableHead>
+                          <TableHead>Barra</TableHead>
+                          <TableHead>Turno</TableHead>
+                          <TableHead>Performance</TableHead>
+                        </TableRow>
+                      </TableHeader>
+                      <TableBody>
+                        {barStaffData
+                          .filter(item => selectedBar === "all" || item.bar.toLowerCase().includes(selectedBar.replace(/([A-Z])/g, ' $1').trim().toLowerCase()))
+                          .map(staff => (
+                            <TableRow key={staff.id}>
+                              <TableCell className="font-medium">{staff.name}</TableCell>
+                              <TableCell>{staff.role}</TableCell>
+                              <TableCell>{staff.bar}</TableCell>
+                              <TableCell>{staff.shift}</TableCell>
+                              <TableCell>
+                                <Badge className="bg-green-100 text-green-800 hover:bg-green-100">
+                                  {staff.performance}
+                                </Badge>
+                              </TableCell>
+                            </TableRow>
+                          ))}
+                      </TableBody>
+                    </Table>
+                  </CardContent>
+                </Card>
+              </div>
+            </TabsContent>
+          </Tabs>
         </CardContent>
       </Card>
     </>
