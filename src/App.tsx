@@ -10,12 +10,10 @@ import { Layout } from "@/components/Layout";
 import Dashboard from "./pages/Dashboard";
 import Finances from "./pages/Finances";
 import Stock from "./pages/Stock";
-import Transfers from "./pages/Transfers";
-import Balances from "./pages/Balances";
-import Users from "./pages/Users";
-import PR from "./pages/PR";
+import Orders from "./pages/Orders";
+import Products from "./pages/Products";
 import Bars from "./pages/Bars";
-import Sales from "./pages/Sales";
+import Users from "./pages/Users";
 import Reports from "./pages/Reports";
 import Settings from "./pages/Settings";
 import NotFound from "./pages/NotFound";
@@ -31,14 +29,12 @@ const App = () => (
         <Routes>
           <Route path="/" element={<Layout />}>
             <Route index element={<Dashboard />} />
+            <Route path="orders" element={<Orders />} />
             <Route path="finances" element={<Finances />} />
             <Route path="stock" element={<Stock />} />
-            <Route path="transfers" element={<Transfers />} />
-            <Route path="balances" element={<Balances />} />
-            <Route path="users" element={<Users />} />
-            <Route path="pr" element={<PR />} />
+            <Route path="products" element={<Products />} />
             <Route path="bars" element={<Bars />} />
-            <Route path="sales" element={<Sales />} />
+            <Route path="users" element={<Users />} />
             <Route path="reports" element={<Reports />} />
             <Route path="settings" element={<Settings />} />
           </Route>

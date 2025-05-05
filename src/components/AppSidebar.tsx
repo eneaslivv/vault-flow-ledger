@@ -24,25 +24,26 @@ import {
   Settings,
   ShoppingCart,
   User,
-  Users
+  Users,
+  ClipboardList,
+  BookOpen,
+  QrCode,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 
 const mainNavItems = [
-  { title: "Dashboard", icon: Home, path: "/" },
-  { title: "Finanzas", icon: DollarSign, path: "/finances" },
-  { title: "Stock", icon: Database, path: "/stock" },
-  { title: "Transferencias", icon: ArrowRightLeft, path: "/transfers" },
-  { title: "Monedas & Saldos", icon: CreditCard, path: "/balances" },
+  { title: "Inicio", icon: Home, path: "/" },
+  { title: "Pedidos", icon: ClipboardList, path: "/orders" },
+  { title: "Finanzas & Saldos", icon: DollarSign, path: "/finances" },
+  { title: "Stock & Reasignaciones", icon: Database, path: "/stock" },
+  { title: "Carta & Productos", icon: BookOpen, path: "/products" },
+  { title: "Barras & QRs", icon: QrCode, path: "/bars" },
 ];
 
 const managementNavItems = [
-  { title: "Usuarios", icon: User, path: "/users" },
-  { title: "PR", icon: Users, path: "/pr" },
-  { title: "Bares", icon: Briefcase, path: "/bars" },
-  { title: "Ventas", icon: ShoppingCart, path: "/sales" },
-  { title: "Reportes", icon: BarChart, path: "/reports" },
+  { title: "Roles & Usuarios", icon: User, path: "/users" },
+  { title: "Reportes & Métricas", icon: BarChart, path: "/reports" },
   { title: "Configuración", icon: Settings, path: "/settings" },
 ];
 
