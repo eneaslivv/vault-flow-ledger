@@ -3,6 +3,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { BarChart, QrCode, ArrowRightLeft, Users } from "lucide-react";
+import { useNavigate } from "react-router-dom";
 
 // Mock data para las barras
 const barsData = [
@@ -53,6 +54,12 @@ interface BarVisualizationProps {
 }
 
 export function BarVisualization({ className }: BarVisualizationProps) {
+  const navigate = useNavigate();
+
+  const handleViewBarDetail = (barId: number) => {
+    navigate(`/bars/${barId}`);
+  };
+
   return (
     <div className={className}>
       <div className="flex justify-between items-center mb-4">
@@ -95,7 +102,13 @@ export function BarVisualization({ className }: BarVisualizationProps) {
                 <Badge variant="outline" className="bg-blue-50 text-blue-700 border-blue-100">
                   {bar.stockItems} productos en stock
                 </Badge>
-                <Button variant="ghost" size="sm">Ver Detalle</Button>
+                <Button 
+                  variant="ghost" 
+                  size="sm" 
+                  onClick={() => handleViewBarDetail(bar.id)}
+                >
+                  Ver Detalle
+                </Button>
               </div>
             </CardContent>
           </Card>
