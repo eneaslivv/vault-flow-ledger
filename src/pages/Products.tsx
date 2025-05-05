@@ -1,4 +1,3 @@
-
 import { useState } from "react";
 import { PageHeader } from "@/components/PageHeader";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
@@ -16,6 +15,7 @@ import {
   Eye,
   Filter
 } from "lucide-react";
+import { CustomDrinks } from "@/components/products/CustomDrinks";
 
 // Mock data for products
 const productsData = [
@@ -68,10 +68,11 @@ const Products = () => {
         </CardHeader>
         <CardContent>
           <Tabs defaultValue="products">
-            <TabsList className="grid w-full grid-cols-3">
+            <TabsList className="grid w-full grid-cols-4">
               <TabsTrigger value="products">Productos</TabsTrigger>
               <TabsTrigger value="categories">Categorías</TabsTrigger>
               <TabsTrigger value="prices">Precios por Barra</TabsTrigger>
+              <TabsTrigger value="custom">Tragos Personalizados</TabsTrigger>
             </TabsList>
             
             {/* Productos */}
@@ -258,6 +259,11 @@ const Products = () => {
                   ))}
                 </TableBody>
               </Table>
+            </TabsContent>
+            
+            {/* Tragos Personalizados */}
+            <TabsContent value="custom">
+              <CustomDrinks selectedBar={selectedBarFilter} />
             </TabsContent>
           </Tabs>
         </CardContent>

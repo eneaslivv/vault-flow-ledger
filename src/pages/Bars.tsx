@@ -16,13 +16,14 @@ import {
   DollarSign,
   Tag,
   BoxesIcon,
+  Users,
 } from "lucide-react";
 import { StatsCard } from "@/components/StatsCard";
 import { useIsMobile } from "@/hooks/use-mobile";
 import { IncomePanel } from "@/components/bars/IncomePanel";
 import { StockReentry } from "@/components/bars/StockReentry";
-import { CustomDrinks } from "@/components/bars/CustomDrinks";
 import { StockTransfers } from "@/components/bars/StockTransfers";
+import { BarVisualization } from "@/components/bars/BarVisualization";
 
 // Mock data for QR performance
 const qrPerformanceData = [
@@ -90,6 +91,9 @@ const Bars = () => {
         />
       </div>
 
+      {/* Visualización de barras */}
+      <BarVisualization className="mb-6" />
+
       <Card>
         <CardHeader>
           <CardTitle>Gestión de Barras</CardTitle>
@@ -115,10 +119,9 @@ const Bars = () => {
           </div>
         
           <Tabs defaultValue="income">
-            <TabsList className="grid w-full grid-cols-5">
+            <TabsList className="grid w-full grid-cols-4">
               <TabsTrigger value="income">Ingresos</TabsTrigger>
               <TabsTrigger value="reentry">Reingresos</TabsTrigger>
-              <TabsTrigger value="customDrinks">Tragos Custom</TabsTrigger>
               <TabsTrigger value="transfers">Transferencias</TabsTrigger>
               <TabsTrigger value="details">Detalle de Barras</TabsTrigger>
             </TabsList>
@@ -131,11 +134,6 @@ const Bars = () => {
             {/* Reingresos Panel */}
             <TabsContent value="reentry">
               <StockReentry selectedBar={selectedBar} />
-            </TabsContent>
-            
-            {/* Tragos Custom Panel */}
-            <TabsContent value="customDrinks">
-              <CustomDrinks selectedBar={selectedBar} />
             </TabsContent>
             
             {/* Transferencias Panel */}
