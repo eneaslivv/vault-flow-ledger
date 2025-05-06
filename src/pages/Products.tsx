@@ -20,19 +20,20 @@ import {
   Filter,
   PackagePlus,
   PackageX,
-  Gift
+  Gift,
+  Coins
 } from "lucide-react";
 import { CustomDrinks } from "@/components/products/CustomDrinks";
 
 // Mock data for products
 const productsData = [
-  { id: 1, name: "Gin Tonic", category: "Bebidas", price: "$800", stockAvailable: 120, limitedStock: false, bars: ["Bar Central", "Bar Norte", "Bar VIP"], isCourtesy: true, courtesyRules: { maxPerNight: 10, allowedRanks: ["VIP", "Premium"] } },
-  { id: 2, name: "Vodka Tonic", category: "Bebidas", price: "$750", stockAvailable: 85, limitedStock: false, bars: ["Bar Central", "Bar Norte"], isCourtesy: true, courtesyRules: { maxPerNight: 8, allowedRanks: ["VIP", "Premium", "Standard"] } },
-  { id: 3, name: "Cerveza", category: "Bebidas", price: "$500", stockAvailable: 200, limitedStock: false, bars: ["Bar Central", "Bar Norte", "Bar Sur"], isCourtesy: false, courtesyRules: null },
-  { id: 4, name: "Fernet con Coca", category: "Bebidas", price: "$700", stockAvailable: 150, limitedStock: false, bars: ["Bar Central", "Bar Norte", "Bar Sur"], isCourtesy: true, courtesyRules: { maxPerNight: 6, allowedRanks: ["VIP"] } },
-  { id: 5, name: "Champagne", category: "Bebidas Premium", price: "$12500", stockAvailable: 25, limitedStock: true, bars: ["Bar VIP"], isCourtesy: true, courtesyRules: { maxPerNight: 2, allowedRanks: ["VIP"] } },
-  { id: 6, name: "Nachos", category: "Comidas", price: "$600", stockAvailable: 35, limitedStock: true, bars: ["Bar Central", "Bar Norte"], isCourtesy: false, courtesyRules: null },
-  { id: 7, name: "Combo Fiesta", category: "Combos", price: "$5000", stockAvailable: 10, limitedStock: true, bars: ["Bar VIP"], isCourtesy: false, courtesyRules: null },
+  { id: 1, name: "Gin Tonic", category: "Bebidas", price: "$800", stockAvailable: 120, limitedStock: false, bars: ["Bar Central", "Bar Norte", "Bar VIP"], isCourtesy: true, courtesyRules: { maxPerNight: 10, allowedRanks: ["VIP", "Premium"] }, isTokenProduct: true, tokenRanks: ["VIP", "Premium"] },
+  { id: 2, name: "Vodka Tonic", category: "Bebidas", price: "$750", stockAvailable: 85, limitedStock: false, bars: ["Bar Central", "Bar Norte"], isCourtesy: true, courtesyRules: { maxPerNight: 8, allowedRanks: ["VIP", "Premium", "Standard"] }, isTokenProduct: true, tokenRanks: ["VIP", "Premium", "Standard"] },
+  { id: 3, name: "Cerveza", category: "Bebidas", price: "$500", stockAvailable: 200, limitedStock: false, bars: ["Bar Central", "Bar Norte", "Bar Sur"], isCourtesy: false, courtesyRules: null, isTokenProduct: true, tokenRanks: ["VIP", "Premium", "Standard"] },
+  { id: 4, name: "Fernet con Coca", category: "Bebidas", price: "$700", stockAvailable: 150, limitedStock: false, bars: ["Bar Central", "Bar Norte", "Bar Sur"], isCourtesy: true, courtesyRules: { maxPerNight: 6, allowedRanks: ["VIP"] }, isTokenProduct: true, tokenRanks: ["VIP"] },
+  { id: 5, name: "Champagne", category: "Bebidas Premium", price: "$12500", stockAvailable: 25, limitedStock: true, bars: ["Bar VIP"], isCourtesy: true, courtesyRules: { maxPerNight: 2, allowedRanks: ["VIP"] }, isTokenProduct: false, tokenRanks: [] },
+  { id: 6, name: "Nachos", category: "Comidas", price: "$600", stockAvailable: 35, limitedStock: true, bars: ["Bar Central", "Bar Norte"], isCourtesy: false, courtesyRules: null, isTokenProduct: true, tokenRanks: ["VIP", "Premium", "Standard"] },
+  { id: 7, name: "Combo Fiesta", category: "Combos", price: "$5000", stockAvailable: 10, limitedStock: true, bars: ["Bar VIP"], isCourtesy: false, courtesyRules: null, isTokenProduct: false, tokenRanks: [] },
 ];
 
 // Mock data for categories
@@ -128,14 +129,74 @@ const CourtesySettingsDialog = ({ product, onSave }) => {
   );
 };
 
+const PRTokenSettingsDialog = ({ product, onSave }) => {
+  const [allowedRanks, setAllowedRanks] = useState<string[]>(product?.tokenRanks || []);
+  
+  const toggleRank = (rank: string) => {
+    if (allowedRanks.includes(rank)) {
+      setAllowedRanks(allowedRanks.filter(r => r !== rank));
+    } else {
+      setAllowedRanks([...allowedRanks, rank]);
+    }
+  };
+  
+  const handleSave = () => {
+    onSave({
+      ...product,
+      isTokenProduct: allowedRanks.length > 0,
+      tokenRanks: allowedRanks
+    });
+  };
+  
+  return (
+    <div className="space-y-4">
+      <div>
+        <Label className="mb-2 block">Rangos de PR permitidos para comprar con tokens</Label>
+        <div className="space-y-2">
+          <div className="flex items-center space-x-2">
+            <Switch 
+              id="token-vip-rank" 
+              checked={allowedRanks.includes("VIP")}
+              onCheckedChange={() => toggleRank("VIP")}
+            />
+            <Label htmlFor="token-vip-rank">VIP</Label>
+          </div>
+          <div className="flex items-center space-x-2">
+            <Switch 
+              id="token-premium-rank" 
+              checked={allowedRanks.includes("Premium")}
+              onCheckedChange={() => toggleRank("Premium")}
+            />
+            <Label htmlFor="token-premium-rank">Premium</Label>
+          </div>
+          <div className="flex items-center space-x-2">
+            <Switch 
+              id="token-standard-rank" 
+              checked={allowedRanks.includes("Standard")}
+              onCheckedChange={() => toggleRank("Standard")}
+            />
+            <Label htmlFor="token-standard-rank">Standard</Label>
+          </div>
+        </div>
+      </div>
+      
+      <div className="flex justify-end">
+        <Button onClick={handleSave}>Guardar Configuración</Button>
+      </div>
+    </div>
+  );
+};
+
 const Products = () => {
   const [selectedBarFilter, setSelectedBarFilter] = useState("all");
   const [selectedCategoryFilter, setSelectedCategoryFilter] = useState("all");
   const [stockAdjustmentOpen, setStockAdjustmentOpen] = useState(false);
   const [productToAdjust, setProductToAdjust] = useState("");
   const [courtesyFilterOn, setCourtesyFilterOn] = useState(false);
+  const [tokenProductFilterOn, setTokenProductFilterOn] = useState(false);
   const [selectedProduct, setSelectedProduct] = useState(null);
   const [courtesySettingsOpen, setCourtesySettingsOpen] = useState(false);
+  const [tokenSettingsOpen, setTokenSettingsOpen] = useState(false);
   const [products, setProducts] = useState(productsData);
 
   const handleAdjustStock = (productName: string = "") => {
@@ -177,10 +238,40 @@ const Products = () => {
     setCourtesySettingsOpen(false);
   };
   
-  // Filter products based on courtesy status if filter is on
-  const filteredProducts = courtesyFilterOn 
-    ? products.filter(product => product.isCourtesy)
-    : products;
+  const toggleTokenProduct = (productId: number) => {
+    setProducts(products.map(product => {
+      if (product.id === productId) {
+        if (product.isTokenProduct) {
+          // If already a token product, just disable it
+          return { ...product, isTokenProduct: false, tokenRanks: [] };
+        } else {
+          // If not a token product, open settings dialog
+          setSelectedProduct(product);
+          setTokenSettingsOpen(true);
+          return product;
+        }
+      }
+      return product;
+    }));
+  };
+  
+  const saveTokenSettings = (updatedProduct) => {
+    setProducts(products.map(product => 
+      product.id === updatedProduct.id ? updatedProduct : product
+    ));
+    setTokenSettingsOpen(false);
+  };
+  
+  // Filter products based on filters
+  let filteredProducts = products;
+  
+  if (courtesyFilterOn) {
+    filteredProducts = filteredProducts.filter(product => product.isCourtesy);
+  }
+  
+  if (tokenProductFilterOn) {
+    filteredProducts = filteredProducts.filter(product => product.isTokenProduct);
+  }
   
   return (
     <>
@@ -257,13 +348,23 @@ const Products = () => {
               </div>
               
               <div className="flex justify-between items-center mb-4">
-                <div className="flex items-center space-x-2">
-                  <Switch 
-                    id="courtesyFilter" 
-                    checked={courtesyFilterOn}
-                    onCheckedChange={setCourtesyFilterOn}
-                  />
-                  <Label htmlFor="courtesyFilter">Solo productos para cortesía</Label>
+                <div className="flex items-center space-x-4">
+                  <div className="flex items-center space-x-2">
+                    <Switch 
+                      id="courtesyFilter" 
+                      checked={courtesyFilterOn}
+                      onCheckedChange={setCourtesyFilterOn}
+                    />
+                    <Label htmlFor="courtesyFilter">Solo productos para cortesía</Label>
+                  </div>
+                  <div className="flex items-center space-x-2">
+                    <Switch 
+                      id="tokenProductFilter" 
+                      checked={tokenProductFilterOn}
+                      onCheckedChange={setTokenProductFilterOn}
+                    />
+                    <Label htmlFor="tokenProductFilter">Solo productos para PR Tokens</Label>
+                  </div>
                 </div>
               </div>
               
@@ -277,6 +378,7 @@ const Products = () => {
                     <TableHead>Stock</TableHead>
                     <TableHead>Barras</TableHead>
                     <TableHead>Cortesía</TableHead>
+                    <TableHead>PR Tokens</TableHead>
                     <TableHead>Acciones</TableHead>
                   </TableRow>
                 </TableHeader>
@@ -322,6 +424,26 @@ const Products = () => {
                               }}
                             >
                               <Gift className="h-4 w-4" />
+                            </Button>
+                          )}
+                        </div>
+                      </TableCell>
+                      <TableCell>
+                        <div className="flex items-center space-x-2">
+                          <Switch 
+                            checked={product.isTokenProduct} 
+                            onCheckedChange={() => toggleTokenProduct(product.id)}
+                          />
+                          {product.isTokenProduct && (
+                            <Button 
+                              variant="ghost" 
+                              size="icon" 
+                              onClick={() => {
+                                setSelectedProduct(product);
+                                setTokenSettingsOpen(true);
+                              }}
+                            >
+                              <Coins className="h-4 w-4" />
                             </Button>
                           )}
                         </div>
@@ -493,9 +615,15 @@ const Products = () => {
                 <div className="space-y-4">
                   <div className="flex justify-between">
                     <span>Productos asociados:</span>
-                    <Badge>Limitados (15)</Badge>
+                    <Badge>{products.filter(p => p.isTokenProduct).length}</Badge>
                   </div>
-                  <Button size="sm" className="w-full">Configurar productos</Button>
+                  <Button 
+                    size="sm" 
+                    className="w-full"
+                    onClick={() => setTokenProductFilterOn(true)}
+                  >
+                    Configurar productos
+                  </Button>
                 </div>
               </CardContent>
             </Card>
@@ -544,6 +672,21 @@ const Products = () => {
             <CourtesySettingsDialog 
               product={selectedProduct} 
               onSave={saveCourtesySettings} 
+            />
+          )}
+        </DialogContent>
+      </Dialog>
+      
+      {/* Dialog for PR Token settings */}
+      <Dialog open={tokenSettingsOpen} onOpenChange={setTokenSettingsOpen}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Configuración de PR Tokens: {selectedProduct?.name}</DialogTitle>
+          </DialogHeader>
+          {selectedProduct && (
+            <PRTokenSettingsDialog 
+              product={selectedProduct} 
+              onSave={saveTokenSettings} 
             />
           )}
         </DialogContent>
