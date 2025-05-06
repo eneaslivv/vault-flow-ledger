@@ -11,7 +11,9 @@ import { Switch } from "@/components/ui/switch";
 import { Label } from "@/components/ui/label";
 import { StockAdjustment } from "@/components/stock/StockAdjustment";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
-import { BookOpen, Plus, Edit, Trash, Eye, Filter, PackagePlus, PackageX, Gift, Coins } from "lucide-react";
+import { Checkbox } from "@/components/ui/checkbox";
+import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuSeparator, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
+import { BookOpen, Plus, Edit, Trash, Eye, Filter, PackagePlus, PackageX, Gift, Coins, MoreVertical } from "lucide-react";
 import { CustomDrinks } from "@/components/products/CustomDrinks";
 
 // Mock data for products
@@ -271,6 +273,7 @@ const PRTokenSettingsDialog = ({
       </div>
     </div>;
 };
+
 const Products = () => {
   const [selectedBarFilter, setSelectedBarFilter] = useState("all");
   const [selectedCategoryFilter, setSelectedCategoryFilter] = useState("all");
@@ -282,18 +285,41 @@ const Products = () => {
   const [courtesySettingsOpen, setCourtesySettingsOpen] = useState(false);
   const [tokenSettingsOpen, setTokenSettingsOpen] = useState(false);
   const [products, setProducts] = useState(productsData);
+  const [selectedProducts, setSelectedProducts] = useState<number[]>([]);
+  
   const handleAdjustStock = (productName: string = "") => {
     setProductToAdjust(productName);
     setStockAdjustmentOpen(true);
   };
+  
+  const toggleProductSelection = (productId: number) => {
+    setSelectedProducts(prev => {
+      if (prev.includes(productId)) {
+        return prev.filter(id => id !== productId);
+      } else {
+        return [...prev, productId];
+      }
+    });
+  };
+  
+  const toggleAllProducts = (checked: boolean) => {
+    if (checked) {
+      setSelectedProducts(filteredProducts.map(product => product.id));
+    } else {
+      setSelectedProducts([]);
+    }
+  };
+  
   const handleStockReingress = (data: any) => {
     console.log("Reingreso procesado:", data);
     // Aquí iría la lógica para actualizar el stock
   };
+  
   const handleStockLoss = (data: any) => {
     console.log("Pérdida registrada:", data);
     // Aquí iría la lógica para actualizar el stock
   };
+  
   const toggleCourtesy = (productId: number) => {
     setProducts(products.map(product => {
       if (product.id === productId) {
@@ -313,10 +339,12 @@ const Products = () => {
       return product;
     }));
   };
+  
   const saveCourtesySettings = updatedProduct => {
     setProducts(products.map(product => product.id === updatedProduct.id ? updatedProduct : product));
     setCourtesySettingsOpen(false);
   };
+  
   const toggleTokenProduct = (productId: number) => {
     setProducts(products.map(product => {
       if (product.id === productId) {
@@ -337,9 +365,21 @@ const Products = () => {
       return product;
     }));
   };
+  
   const saveTokenSettings = updatedProduct => {
     setProducts(products.map(product => product.id === updatedProduct.id ? updatedProduct : product));
     setTokenSettingsOpen(false);
+  };
+  
+  const deleteProduct = (productId: number) => {
+    // Here you would typically call an API to delete the product
+    setProducts(products.filter(product => product.id !== productId));
+  };
+  
+  const deleteSelectedProducts = () => {
+    // Here you would typically call an API to delete the selected products
+    setProducts(products.filter(product => !selectedProducts.includes(product.id)));
+    setSelectedProducts([]);
   };
 
   // Filter products based on filters
@@ -350,6 +390,12 @@ const Products = () => {
   if (tokenProductFilterOn) {
     filteredProducts = filteredProducts.filter(product => product.isTokenProduct);
   }
+  
+  const areAllProductsSelected = filteredProducts.length > 0 && 
+    filteredProducts.every(product => selectedProducts.includes(product.id));
+    
+  const hasSelectedProducts = selectedProducts.length > 0;
+  
   return <>
       <PageHeader title="Carta & Productos" description="Gestión de productos, precios y disponibilidad">
         <Button className="mr-2" onClick={() => handleAdjustStock()}>
@@ -372,7 +418,7 @@ const Products = () => {
             <TabsList className="grid w-full grid-cols-4">
               <TabsTrigger value="products">Productos</TabsTrigger>
               <TabsTrigger value="categories">Categorías</TabsTrigger>
-              <TabsTrigger value="prices" className="esta seccion eliminemosla no le veo el sentido\n">Precios por Barra</TabsTrigger>
+              <TabsTrigger value="prices">Precios por Barra</TabsTrigger>
               <TabsTrigger value="custom">Tragos Personalizados</TabsTrigger>
             </TabsList>
             
@@ -431,24 +477,46 @@ const Products = () => {
                     <Label htmlFor="tokenProductFilter">Solo productos para PR Tokens</Label>
                   </div>
                 </div>
+                
+                {hasSelectedProducts && (
+                  <div className="flex items-center space-x-2">
+                    <Badge variant="outline">{selectedProducts.length} seleccionados</Badge>
+                    <Button variant="destructive" size="sm" onClick={deleteSelectedProducts}>
+                      <Trash className="h-4 w-4 mr-1" /> Eliminar
+                    </Button>
+                  </div>
+                )}
               </div>
               
               <Table>
                 <TableHeader>
                   <TableRow>
+                    <TableHead className="w-[48px]">
+                      <Checkbox 
+                        checked={areAllProductsSelected} 
+                        onCheckedChange={toggleAllProducts}
+                      />
+                    </TableHead>
                     <TableHead>ID</TableHead>
-                    <TableHead className="elimina esto\n\n">Nombre</TableHead>
+                    <TableHead>Nombre</TableHead>
                     <TableHead>Categoría</TableHead>
                     <TableHead>Precio</TableHead>
                     <TableHead>Stock</TableHead>
                     <TableHead>Barras</TableHead>
                     <TableHead>Cortesía</TableHead>
                     <TableHead>PR Tokens</TableHead>
-                    <TableHead>Acciones</TableHead>
+                    <TableHead className="text-right">Acciones</TableHead>
                   </TableRow>
                 </TableHeader>
                 <TableBody>
-                  {filteredProducts.map(product => <TableRow key={product.id}>
+                  {filteredProducts.map(product => (
+                    <TableRow key={product.id}>
+                      <TableCell>
+                        <Checkbox 
+                          checked={selectedProducts.includes(product.id)} 
+                          onCheckedChange={() => toggleProductSelection(product.id)}
+                        />
+                      </TableCell>
                       <TableCell>#{product.id}</TableCell>
                       <TableCell>{product.name}</TableCell>
                       <TableCell>{product.category}</TableCell>
@@ -456,64 +524,98 @@ const Products = () => {
                       <TableCell>
                         <div className="flex items-center gap-2">
                           {product.stockAvailable}
-                          {product.limitedStock && <Badge variant="outline" className="text-amber-600 border-amber-600">
+                          {product.limitedStock && (
+                            <Badge variant="outline" className="text-amber-600 border-amber-600">
                               Limitado
-                            </Badge>}
+                            </Badge>
+                          )}
                         </div>
                       </TableCell>
                       <TableCell>
                         <div className="flex flex-wrap gap-1">
-                          {product.bars.map(bar => <Badge key={bar} variant="secondary" className="text-xs">
+                          {product.bars.map(bar => (
+                            <Badge key={bar} variant="secondary" className="text-xs">
                               {bar}
-                            </Badge>)}
+                            </Badge>
+                          ))}
                         </div>
                       </TableCell>
                       <TableCell>
                         <div className="flex items-center space-x-2">
                           <Switch checked={product.isCourtesy} onCheckedChange={() => toggleCourtesy(product.id)} />
-                          {product.isCourtesy && <Button variant="ghost" size="icon" onClick={() => {
-                        setSelectedProduct(product);
-                        setCourtesySettingsOpen(true);
-                      }}>
+                          {product.isCourtesy && (
+                            <Button variant="ghost" size="icon" onClick={() => {
+                              setSelectedProduct(product);
+                              setCourtesySettingsOpen(true);
+                            }}>
                               <Gift className="h-4 w-4" />
-                            </Button>}
+                            </Button>
+                          )}
                         </div>
                       </TableCell>
                       <TableCell>
                         <div className="flex items-center space-x-2">
                           <Switch checked={product.isTokenProduct} onCheckedChange={() => toggleTokenProduct(product.id)} />
-                          {product.isTokenProduct && <Button variant="ghost" size="icon" onClick={() => {
-                        setSelectedProduct(product);
-                        setTokenSettingsOpen(true);
-                      }}>
+                          {product.isTokenProduct && (
+                            <Button variant="ghost" size="icon" onClick={() => {
+                              setSelectedProduct(product);
+                              setTokenSettingsOpen(true);
+                            }}>
                               <Coins className="h-4 w-4" />
-                            </Button>}
+                            </Button>
+                          )}
                         </div>
                       </TableCell>
-                      <TableCell>
-                        <div className="flex gap-2">
-                          <Button variant="ghost" size="icon" onClick={() => handleAdjustStock(product.name)}>
-                            <PackagePlus className="h-4 w-4" />
-                          </Button>
-                          <Button variant="ghost" size="icon">
-                            <Eye className="h-4 w-4" />
-                          </Button>
-                          <Button variant="ghost" size="icon">
-                            <Edit className="h-4 w-4" />
-                          </Button>
-                          <Button variant="ghost" size="icon">
-                            <Trash className="h-4 w-4" />
-                          </Button>
-                        </div>
+                      <TableCell className="text-right">
+                        <DropdownMenu>
+                          <DropdownMenuTrigger asChild>
+                            <Button variant="ghost" size="icon">
+                              <MoreVertical className="h-4 w-4" />
+                            </Button>
+                          </DropdownMenuTrigger>
+                          <DropdownMenuContent align="end">
+                            <DropdownMenuItem onClick={() => handleAdjustStock(product.name)}>
+                              <PackagePlus className="h-4 w-4 mr-2" />
+                              Ajustar Stock
+                            </DropdownMenuItem>
+                            <DropdownMenuItem>
+                              <Eye className="h-4 w-4 mr-2" />
+                              Ver Detalles
+                            </DropdownMenuItem>
+                            <DropdownMenuItem>
+                              <Edit className="h-4 w-4 mr-2" />
+                              Editar Producto
+                            </DropdownMenuItem>
+                            <DropdownMenuSeparator />
+                            <DropdownMenuItem 
+                              className="text-destructive" 
+                              onClick={() => deleteProduct(product.id)}
+                            >
+                              <Trash className="h-4 w-4 mr-2" />
+                              Eliminar
+                            </DropdownMenuItem>
+                          </DropdownMenuContent>
+                        </DropdownMenu>
                       </TableCell>
-                    </TableRow>)}
+                    </TableRow>
+                  ))}
                 </TableBody>
               </Table>
             </TabsContent>
             
             {/* Categorías */}
             <TabsContent value="categories">
-              <div className="flex justify-end mb-4">
+              <div className="flex justify-between mb-4">
+                <div>
+                  {hasSelectedProducts && (
+                    <div className="flex items-center space-x-2">
+                      <Badge variant="outline">{selectedProducts.length} seleccionados</Badge>
+                      <Button variant="destructive" size="sm" onClick={deleteSelectedProducts}>
+                        <Trash className="h-4 w-4 mr-1" /> Eliminar
+                      </Button>
+                    </div>
+                  )}
+                </div>
                 <Button size="sm">
                   <Plus className="mr-2 h-4 w-4" />
                   Nueva Categoría
@@ -523,38 +625,75 @@ const Products = () => {
               <Table>
                 <TableHeader>
                   <TableRow>
+                    <TableHead className="w-[48px]">
+                      <Checkbox 
+                        checked={areAllProductsSelected}
+                        onCheckedChange={toggleAllProducts}
+                      />
+                    </TableHead>
                     <TableHead>ID</TableHead>
                     <TableHead>Nombre</TableHead>
                     <TableHead>Descripción</TableHead>
                     <TableHead>Nº Productos</TableHead>
-                    <TableHead>Acciones</TableHead>
+                    <TableHead className="text-right">Acciones</TableHead>
                   </TableRow>
                 </TableHeader>
                 <TableBody>
-                  {categoriesData.map(category => <TableRow key={category.id}>
+                  {categoriesData.map(category => (
+                    <TableRow key={category.id}>
+                      <TableCell>
+                        <Checkbox 
+                          checked={selectedProducts.includes(category.id)} 
+                          onCheckedChange={() => toggleProductSelection(category.id)}
+                        />
+                      </TableCell>
                       <TableCell>#{category.id}</TableCell>
                       <TableCell>{category.name}</TableCell>
                       <TableCell>{category.description}</TableCell>
                       <TableCell>{category.productsCount}</TableCell>
-                      <TableCell>
-                        <div className="flex gap-2">
-                          <Button variant="outline" size="sm">Ver Productos</Button>
-                          <Button variant="ghost" size="icon">
-                            <Edit className="h-4 w-4" />
-                          </Button>
-                          <Button variant="ghost" size="icon">
-                            <Trash className="h-4 w-4" />
-                          </Button>
-                        </div>
+                      <TableCell className="text-right">
+                        <DropdownMenu>
+                          <DropdownMenuTrigger asChild>
+                            <Button variant="ghost" size="icon">
+                              <MoreVertical className="h-4 w-4" />
+                            </Button>
+                          </DropdownMenuTrigger>
+                          <DropdownMenuContent align="end">
+                            <DropdownMenuItem>
+                              <Eye className="h-4 w-4 mr-2" />
+                              Ver Productos
+                            </DropdownMenuItem>
+                            <DropdownMenuItem>
+                              <Edit className="h-4 w-4 mr-2" />
+                              Editar Categoría
+                            </DropdownMenuItem>
+                            <DropdownMenuSeparator />
+                            <DropdownMenuItem className="text-destructive">
+                              <Trash className="h-4 w-4 mr-2" />
+                              Eliminar
+                            </DropdownMenuItem>
+                          </DropdownMenuContent>
+                        </DropdownMenu>
                       </TableCell>
-                    </TableRow>)}
+                    </TableRow>
+                  ))}
                 </TableBody>
               </Table>
             </TabsContent>
             
             {/* Precios por Barra */}
             <TabsContent value="prices">
-              <div className="flex justify-end mb-4">
+              <div className="flex justify-between mb-4">
+                <div>
+                  {hasSelectedProducts && (
+                    <div className="flex items-center space-x-2">
+                      <Badge variant="outline">{selectedProducts.length} seleccionados</Badge>
+                      <Button variant="destructive" size="sm" onClick={deleteSelectedProducts}>
+                        <Trash className="h-4 w-4 mr-1" /> Eliminar
+                      </Button>
+                    </div>
+                  )}
+                </div>
                 <Button size="sm">
                   <Edit className="mr-2 h-4 w-4" />
                   Edición Masiva
@@ -564,30 +703,53 @@ const Products = () => {
               <Table>
                 <TableHeader>
                   <TableRow>
+                    <TableHead className="w-[48px]">
+                      <Checkbox 
+                        checked={areAllProductsSelected}
+                        onCheckedChange={toggleAllProducts}
+                      />
+                    </TableHead>
                     <TableHead>ID</TableHead>
                     <TableHead>Producto</TableHead>
                     <TableHead>Bar Central</TableHead>
                     <TableHead>Bar Norte</TableHead>
                     <TableHead>Bar Sur</TableHead>
                     <TableHead>Bar VIP</TableHead>
-                    <TableHead>Acciones</TableHead>
+                    <TableHead className="text-right">Acciones</TableHead>
                   </TableRow>
                 </TableHeader>
                 <TableBody>
-                  {pricesByBarData.map(price => <TableRow key={price.productId}>
+                  {pricesByBarData.map(price => (
+                    <TableRow key={price.productId}>
+                      <TableCell>
+                        <Checkbox 
+                          checked={selectedProducts.includes(price.productId)} 
+                          onCheckedChange={() => toggleProductSelection(price.productId)}
+                        />
+                      </TableCell>
                       <TableCell>#{price.productId}</TableCell>
                       <TableCell>{price.productName}</TableCell>
                       <TableCell>{price.barCentral}</TableCell>
                       <TableCell>{price.barNorte}</TableCell>
                       <TableCell>{price.barSur}</TableCell>
                       <TableCell>{price.barVIP}</TableCell>
-                      <TableCell>
-                        <Button variant="outline" size="sm">
-                          <Edit className="mr-2 h-4 w-4" />
-                          Editar
-                        </Button>
+                      <TableCell className="text-right">
+                        <DropdownMenu>
+                          <DropdownMenuTrigger asChild>
+                            <Button variant="ghost" size="icon">
+                              <MoreVertical className="h-4 w-4" />
+                            </Button>
+                          </DropdownMenuTrigger>
+                          <DropdownMenuContent align="end">
+                            <DropdownMenuItem>
+                              <Edit className="h-4 w-4 mr-2" />
+                              Editar Precios
+                            </DropdownMenuItem>
+                          </DropdownMenuContent>
+                        </DropdownMenu>
                       </TableCell>
-                    </TableRow>)}
+                    </TableRow>
+                  ))}
                 </TableBody>
               </Table>
             </TabsContent>
