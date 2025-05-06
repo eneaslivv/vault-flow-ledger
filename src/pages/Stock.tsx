@@ -14,6 +14,8 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { useForm } from "react-hook-form";
 import { toast } from "sonner";
 import { StockTransfers } from "@/components/bars/StockTransfers";
+import { StockAdjustment } from "@/components/stock/StockAdjustment";
+import { StockAdjustmentHistory } from "@/components/stock/StockAdjustmentHistory";
 import { 
   ArrowRight, 
   Box, 
@@ -21,6 +23,8 @@ import {
   Search,
   ShoppingCart,
   ArrowRightLeft,
+  PackagePlus,
+  PackageX,
   Plus
 } from "lucide-react";
 
@@ -58,6 +62,8 @@ const Stock = () => {
   const [assignStockDialogOpen, setAssignStockDialogOpen] = useState(false);
   const [selectedProduct, setSelectedProduct] = useState<number | null>(null);
   const [transferDialogOpen, setTransferDialogOpen] = useState(false);
+  const [stockAdjustmentOpen, setStockAdjustmentOpen] = useState(false);
+  const [productToAdjust, setProductToAdjust] = useState("");
   
   const assignForm = useForm({
     defaultValues: {
@@ -95,6 +101,11 @@ const Stock = () => {
     setTransferDialogOpen(true);
   };
 
+  const handleAdjustStock = (productName: string = "") => {
+    setProductToAdjust(productName);
+    setStockAdjustmentOpen(true);
+  };
+
   const onSubmitAssign = (data: any) => {
     console.log("Stock asignado:", data);
     const product = stockData.find(item => item.id === selectedProduct);
@@ -108,6 +119,18 @@ const Stock = () => {
     setTransferDialogOpen(false);
     toast.success(`${data.quantity} unidades de ${data.product} transferidas de ${data.fromBar} a ${data.toBar}`);
     // Aquí iría la lógica para crear la transferencia
+  };
+
+  const handleStockReingress = (data: any) => {
+    console.log("Reingreso procesado:", data);
+    toast.success(`${data.quantity} unidades de ${data.product} reingresadas al stock`);
+    // Aquí iría la lógica para actualizar el stock
+  };
+
+  const handleStockLoss = (data: any) => {
+    console.log("Pérdida registrada:", data);
+    toast.success(`${data.quantity} unidades de ${data.product} registradas como pérdida`);
+    // Aquí iría la lógica para actualizar el stock
   };
 
   const goToBarDetail = (barName: string) => {
@@ -130,6 +153,10 @@ const Stock = () => {
         <Button className="mr-2" onClick={handleNewTransfer}>
           <ArrowRightLeft className="mr-2 h-4 w-4" />
           Nueva Transferencia
+        </Button>
+        <Button className="mr-2" onClick={() => handleAdjustStock()}>
+          <PackagePlus className="mr-2 h-4 w-4" />
+          Ajustar Stock
         </Button>
         <Button>
           <Box className="mr-2 h-4 w-4" />
@@ -203,11 +230,12 @@ const Stock = () => {
           </div>
           
           <Tabs value={activeTab} onValueChange={setActiveTab}>
-            <TabsList className="grid w-full grid-cols-4">
+            <TabsList className="grid w-full grid-cols-5">
               <TabsTrigger value="stock">En Stock</TabsTrigger>
               <TabsTrigger value="courtesies">Cortesías</TabsTrigger>
               <TabsTrigger value="transfers">Transferencias</TabsTrigger>
               <TabsTrigger value="unredeemed">No Retirados</TabsTrigger>
+              <TabsTrigger value="adjustments">Ajustes</TabsTrigger>
             </TabsList>
             
             {/* En Stock */}
@@ -253,8 +281,12 @@ const Stock = () => {
                             <ArrowRightLeft className="mr-2 h-4 w-4" />
                             Asignar
                           </Button>
-                          <Button variant="ghost" size="icon">
-                            <Gift className="h-4 w-4" />
+                          <Button 
+                            variant="ghost" 
+                            size="icon"
+                            onClick={() => handleAdjustStock(item.product)}
+                          >
+                            <PackagePlus className="h-4 w-4" />
                           </Button>
                         </div>
                       </TableCell>
@@ -294,9 +326,18 @@ const Stock = () => {
                       </TableCell>
                       <TableCell>{item.givenBy}</TableCell>
                       <TableCell>
-                        <Button variant="ghost" size="icon">
-                          <ShoppingCart className="h-4 w-4" />
-                        </Button>
+                        <div className="flex gap-2">
+                          <Button variant="ghost" size="icon">
+                            <ShoppingCart className="h-4 w-4" />
+                          </Button>
+                          <Button 
+                            variant="ghost" 
+                            size="icon"
+                            onClick={() => handleAdjustStock(item.product)}
+                          >
+                            <PackageX className="h-4 w-4" />
+                          </Button>
+                        </div>
                       </TableCell>
                     </TableRow>
                   ))}
@@ -339,12 +380,26 @@ const Stock = () => {
                       <TableCell>{item.date}</TableCell>
                       <TableCell>{item.user}</TableCell>
                       <TableCell>
-                        <Button variant="outline" size="sm">Marcar como retirado</Button>
+                        <div className="flex gap-2">
+                          <Button variant="outline" size="sm">Marcar como retirado</Button>
+                          <Button 
+                            variant="ghost" 
+                            size="icon"
+                            onClick={() => handleAdjustStock(item.product)}
+                          >
+                            <PackageX className="h-4 w-4" />
+                          </Button>
+                        </div>
                       </TableCell>
                     </TableRow>
                   ))}
                 </TableBody>
               </Table>
+            </TabsContent>
+            
+            {/* Ajustes de Stock */}
+            <TabsContent value="adjustments">
+              <StockAdjustmentHistory />
             </TabsContent>
           </Tabs>
         </CardContent>
@@ -508,6 +563,15 @@ const Stock = () => {
           </form>
         </DialogContent>
       </Dialog>
+
+      {/* Modal para ajustar stock */}
+      <StockAdjustment 
+        open={stockAdjustmentOpen}
+        onOpenChange={setStockAdjustmentOpen}
+        initialProduct={productToAdjust}
+        onSubmitReingress={handleStockReingress}
+        onSubmitLoss={handleStockLoss}
+      />
     </>
   );
 };

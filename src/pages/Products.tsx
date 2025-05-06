@@ -7,13 +7,16 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Input } from "@/components/ui/input";
+import { StockAdjustment } from "@/components/stock/StockAdjustment";
 import { 
   BookOpen, 
   Plus, 
   Edit, 
   Trash, 
   Eye,
-  Filter
+  Filter,
+  PackagePlus,
+  PackageX
 } from "lucide-react";
 import { CustomDrinks } from "@/components/products/CustomDrinks";
 
@@ -48,6 +51,23 @@ const pricesByBarData = [
 const Products = () => {
   const [selectedBarFilter, setSelectedBarFilter] = useState("all");
   const [selectedCategoryFilter, setSelectedCategoryFilter] = useState("all");
+  const [stockAdjustmentOpen, setStockAdjustmentOpen] = useState(false);
+  const [productToAdjust, setProductToAdjust] = useState("");
+
+  const handleAdjustStock = (productName: string = "") => {
+    setProductToAdjust(productName);
+    setStockAdjustmentOpen(true);
+  };
+
+  const handleStockReingress = (data: any) => {
+    console.log("Reingreso procesado:", data);
+    // Aquí iría la lógica para actualizar el stock
+  };
+
+  const handleStockLoss = (data: any) => {
+    console.log("Pérdida registrada:", data);
+    // Aquí iría la lógica para actualizar el stock
+  };
   
   return (
     <>
@@ -55,6 +75,10 @@ const Products = () => {
         title="Carta & Productos" 
         description="Gestión de productos, precios y disponibilidad"
       >
+        <Button className="mr-2" onClick={() => handleAdjustStock()}>
+          <PackagePlus className="mr-2 h-4 w-4" />
+          Ajustar Stock
+        </Button>
         <Button>
           <Plus className="mr-2 h-4 w-4" />
           Nuevo Producto
@@ -159,6 +183,13 @@ const Products = () => {
                       </TableCell>
                       <TableCell>
                         <div className="flex gap-2">
+                          <Button 
+                            variant="ghost" 
+                            size="icon"
+                            onClick={() => handleAdjustStock(product.name)}
+                          >
+                            <PackagePlus className="h-4 w-4" />
+                          </Button>
                           <Button variant="ghost" size="icon">
                             <Eye className="h-4 w-4" />
                           </Button>
@@ -342,6 +373,15 @@ const Products = () => {
           </div>
         </CardContent>
       </Card>
+
+      {/* Modal para ajustar stock */}
+      <StockAdjustment 
+        open={stockAdjustmentOpen}
+        onOpenChange={setStockAdjustmentOpen}
+        initialProduct={productToAdjust}
+        onSubmitReingress={handleStockReingress}
+        onSubmitLoss={handleStockLoss}
+      />
     </>
   );
 };
