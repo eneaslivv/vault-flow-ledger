@@ -437,7 +437,7 @@ const Products = () => {
                 <TableHeader>
                   <TableRow>
                     <TableHead>ID</TableHead>
-                    <TableHead>Nombre</TableHead>
+                    <TableHead className="elimina esto\n\n">Nombre</TableHead>
                     <TableHead>Categoría</TableHead>
                     <TableHead>Precio</TableHead>
                     <TableHead>Stock</TableHead>
