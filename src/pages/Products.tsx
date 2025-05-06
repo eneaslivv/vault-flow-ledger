@@ -7,7 +7,10 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Input } from "@/components/ui/input";
+import { Switch } from "@/components/ui/switch";
+import { Label } from "@/components/ui/label";
 import { StockAdjustment } from "@/components/stock/StockAdjustment";
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { 
   BookOpen, 
   Plus, 
@@ -16,19 +19,20 @@ import {
   Eye,
   Filter,
   PackagePlus,
-  PackageX
+  PackageX,
+  Gift
 } from "lucide-react";
 import { CustomDrinks } from "@/components/products/CustomDrinks";
 
 // Mock data for products
 const productsData = [
-  { id: 1, name: "Gin Tonic", category: "Bebidas", price: "$800", stockAvailable: 120, limitedStock: false, bars: ["Bar Central", "Bar Norte", "Bar VIP"] },
-  { id: 2, name: "Vodka Tonic", category: "Bebidas", price: "$750", stockAvailable: 85, limitedStock: false, bars: ["Bar Central", "Bar Norte"] },
-  { id: 3, name: "Cerveza", category: "Bebidas", price: "$500", stockAvailable: 200, limitedStock: false, bars: ["Bar Central", "Bar Norte", "Bar Sur"] },
-  { id: 4, name: "Fernet con Coca", category: "Bebidas", price: "$700", stockAvailable: 150, limitedStock: false, bars: ["Bar Central", "Bar Norte", "Bar Sur"] },
-  { id: 5, name: "Champagne", category: "Bebidas Premium", price: "$12500", stockAvailable: 25, limitedStock: true, bars: ["Bar VIP"] },
-  { id: 6, name: "Nachos", category: "Comidas", price: "$600", stockAvailable: 35, limitedStock: true, bars: ["Bar Central", "Bar Norte"] },
-  { id: 7, name: "Combo Fiesta", category: "Combos", price: "$5000", stockAvailable: 10, limitedStock: true, bars: ["Bar VIP"] },
+  { id: 1, name: "Gin Tonic", category: "Bebidas", price: "$800", stockAvailable: 120, limitedStock: false, bars: ["Bar Central", "Bar Norte", "Bar VIP"], isCourtesy: true, courtesyRules: { maxPerNight: 10, allowedRanks: ["VIP", "Premium"] } },
+  { id: 2, name: "Vodka Tonic", category: "Bebidas", price: "$750", stockAvailable: 85, limitedStock: false, bars: ["Bar Central", "Bar Norte"], isCourtesy: true, courtesyRules: { maxPerNight: 8, allowedRanks: ["VIP", "Premium", "Standard"] } },
+  { id: 3, name: "Cerveza", category: "Bebidas", price: "$500", stockAvailable: 200, limitedStock: false, bars: ["Bar Central", "Bar Norte", "Bar Sur"], isCourtesy: false, courtesyRules: null },
+  { id: 4, name: "Fernet con Coca", category: "Bebidas", price: "$700", stockAvailable: 150, limitedStock: false, bars: ["Bar Central", "Bar Norte", "Bar Sur"], isCourtesy: true, courtesyRules: { maxPerNight: 6, allowedRanks: ["VIP"] } },
+  { id: 5, name: "Champagne", category: "Bebidas Premium", price: "$12500", stockAvailable: 25, limitedStock: true, bars: ["Bar VIP"], isCourtesy: true, courtesyRules: { maxPerNight: 2, allowedRanks: ["VIP"] } },
+  { id: 6, name: "Nachos", category: "Comidas", price: "$600", stockAvailable: 35, limitedStock: true, bars: ["Bar Central", "Bar Norte"], isCourtesy: false, courtesyRules: null },
+  { id: 7, name: "Combo Fiesta", category: "Combos", price: "$5000", stockAvailable: 10, limitedStock: true, bars: ["Bar VIP"], isCourtesy: false, courtesyRules: null },
 ];
 
 // Mock data for categories
@@ -48,11 +52,91 @@ const pricesByBarData = [
   { productId: 5, productName: "Champagne", barCentral: "-", barNorte: "-", barSur: "-", barVIP: "$12500" },
 ];
 
+const CourtesySettingsDialog = ({ product, onSave }) => {
+  const [maxPerNight, setMaxPerNight] = useState(product?.courtesyRules?.maxPerNight || 5);
+  const [allowedRanks, setAllowedRanks] = useState<string[]>(product?.courtesyRules?.allowedRanks || ["VIP"]);
+  
+  const toggleRank = (rank: string) => {
+    if (allowedRanks.includes(rank)) {
+      setAllowedRanks(allowedRanks.filter(r => r !== rank));
+    } else {
+      setAllowedRanks([...allowedRanks, rank]);
+    }
+  };
+  
+  const handleSave = () => {
+    onSave({
+      ...product,
+      isCourtesy: true,
+      courtesyRules: {
+        maxPerNight,
+        allowedRanks
+      }
+    });
+  };
+  
+  return (
+    <div className="space-y-4">
+      <div>
+        <Label htmlFor="maxPerNight">Máximo por noche</Label>
+        <Input 
+          id="maxPerNight" 
+          type="number" 
+          value={maxPerNight} 
+          onChange={(e) => setMaxPerNight(parseInt(e.target.value))}
+          min={1}
+        />
+        <p className="text-sm text-muted-foreground mt-1">
+          Cantidad máxima de este producto como cortesía por noche
+        </p>
+      </div>
+      
+      <div>
+        <Label className="mb-2 block">Rangos de PR permitidos</Label>
+        <div className="space-y-2">
+          <div className="flex items-center space-x-2">
+            <Switch 
+              id="vip-rank" 
+              checked={allowedRanks.includes("VIP")}
+              onCheckedChange={() => toggleRank("VIP")}
+            />
+            <Label htmlFor="vip-rank">VIP</Label>
+          </div>
+          <div className="flex items-center space-x-2">
+            <Switch 
+              id="premium-rank" 
+              checked={allowedRanks.includes("Premium")}
+              onCheckedChange={() => toggleRank("Premium")}
+            />
+            <Label htmlFor="premium-rank">Premium</Label>
+          </div>
+          <div className="flex items-center space-x-2">
+            <Switch 
+              id="standard-rank" 
+              checked={allowedRanks.includes("Standard")}
+              onCheckedChange={() => toggleRank("Standard")}
+            />
+            <Label htmlFor="standard-rank">Standard</Label>
+          </div>
+        </div>
+      </div>
+      
+      <div className="flex justify-end">
+        <Button onClick={handleSave}>Guardar Configuración</Button>
+      </div>
+    </div>
+  );
+};
+
 const Products = () => {
   const [selectedBarFilter, setSelectedBarFilter] = useState("all");
   const [selectedCategoryFilter, setSelectedCategoryFilter] = useState("all");
   const [stockAdjustmentOpen, setStockAdjustmentOpen] = useState(false);
   const [productToAdjust, setProductToAdjust] = useState("");
+  const [courtesyFilterOn, setCourtesyFilterOn] = useState(false);
+  const [selectedProduct, setSelectedProduct] = useState(null);
+  const [courtesySettingsOpen, setCourtesySettingsOpen] = useState(false);
+  const [products, setProducts] = useState(productsData);
 
   const handleAdjustStock = (productName: string = "") => {
     setProductToAdjust(productName);
@@ -68,6 +152,35 @@ const Products = () => {
     console.log("Pérdida registrada:", data);
     // Aquí iría la lógica para actualizar el stock
   };
+  
+  const toggleCourtesy = (productId: number) => {
+    setProducts(products.map(product => {
+      if (product.id === productId) {
+        if (product.isCourtesy) {
+          // If already a courtesy, just disable it
+          return { ...product, isCourtesy: false };
+        } else {
+          // If not a courtesy, open settings dialog
+          setSelectedProduct(product);
+          setCourtesySettingsOpen(true);
+          return product;
+        }
+      }
+      return product;
+    }));
+  };
+  
+  const saveCourtesySettings = (updatedProduct) => {
+    setProducts(products.map(product => 
+      product.id === updatedProduct.id ? updatedProduct : product
+    ));
+    setCourtesySettingsOpen(false);
+  };
+  
+  // Filter products based on courtesy status if filter is on
+  const filteredProducts = courtesyFilterOn 
+    ? products.filter(product => product.isCourtesy)
+    : products;
   
   return (
     <>
@@ -143,6 +256,17 @@ const Products = () => {
                 </div>
               </div>
               
+              <div className="flex justify-between items-center mb-4">
+                <div className="flex items-center space-x-2">
+                  <Switch 
+                    id="courtesyFilter" 
+                    checked={courtesyFilterOn}
+                    onCheckedChange={setCourtesyFilterOn}
+                  />
+                  <Label htmlFor="courtesyFilter">Solo productos para cortesía</Label>
+                </div>
+              </div>
+              
               <Table>
                 <TableHeader>
                   <TableRow>
@@ -152,11 +276,12 @@ const Products = () => {
                     <TableHead>Precio</TableHead>
                     <TableHead>Stock</TableHead>
                     <TableHead>Barras</TableHead>
+                    <TableHead>Cortesía</TableHead>
                     <TableHead>Acciones</TableHead>
                   </TableRow>
                 </TableHeader>
                 <TableBody>
-                  {productsData.map((product) => (
+                  {filteredProducts.map((product) => (
                     <TableRow key={product.id}>
                       <TableCell>#{product.id}</TableCell>
                       <TableCell>{product.name}</TableCell>
@@ -179,6 +304,26 @@ const Products = () => {
                               {bar}
                             </Badge>
                           ))}
+                        </div>
+                      </TableCell>
+                      <TableCell>
+                        <div className="flex items-center space-x-2">
+                          <Switch 
+                            checked={product.isCourtesy} 
+                            onCheckedChange={() => toggleCourtesy(product.id)}
+                          />
+                          {product.isCourtesy && (
+                            <Button 
+                              variant="ghost" 
+                              size="icon" 
+                              onClick={() => {
+                                setSelectedProduct(product);
+                                setCourtesySettingsOpen(true);
+                              }}
+                            >
+                              <Gift className="h-4 w-4" />
+                            </Button>
+                          )}
                         </div>
                       </TableCell>
                       <TableCell>
@@ -364,9 +509,15 @@ const Products = () => {
                 <div className="space-y-4">
                   <div className="flex justify-between">
                     <span>Productos asociados:</span>
-                    <Badge>Limitados (8)</Badge>
+                    <Badge>{products.filter(p => p.isCourtesy).length}</Badge>
                   </div>
-                  <Button size="sm" className="w-full">Configurar productos</Button>
+                  <Button 
+                    size="sm" 
+                    className="w-full"
+                    onClick={() => setCourtesyFilterOn(true)}
+                  >
+                    Configurar productos
+                  </Button>
                 </div>
               </CardContent>
             </Card>
@@ -382,6 +533,21 @@ const Products = () => {
         onSubmitReingress={handleStockReingress}
         onSubmitLoss={handleStockLoss}
       />
+      
+      {/* Dialog for courtesy settings */}
+      <Dialog open={courtesySettingsOpen} onOpenChange={setCourtesySettingsOpen}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Configuración de Cortesía: {selectedProduct?.name}</DialogTitle>
+          </DialogHeader>
+          {selectedProduct && (
+            <CourtesySettingsDialog 
+              product={selectedProduct} 
+              onSave={saveCourtesySettings} 
+            />
+          )}
+        </DialogContent>
+      </Dialog>
     </>
   );
 };
