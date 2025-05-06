@@ -415,10 +415,9 @@ const Products = () => {
         </CardHeader>
         <CardContent>
           <Tabs defaultValue="products">
-            <TabsList className="grid w-full grid-cols-4">
+            <TabsList className="grid w-full grid-cols-3">
               <TabsTrigger value="products">Productos</TabsTrigger>
               <TabsTrigger value="categories">Categorías</TabsTrigger>
-              <TabsTrigger value="prices">Precios por Barra</TabsTrigger>
               <TabsTrigger value="custom">Tragos Personalizados</TabsTrigger>
             </TabsList>
             
@@ -671,79 +670,6 @@ const Products = () => {
                             <DropdownMenuItem className="text-destructive">
                               <Trash className="h-4 w-4 mr-2" />
                               Eliminar
-                            </DropdownMenuItem>
-                          </DropdownMenuContent>
-                        </DropdownMenu>
-                      </TableCell>
-                    </TableRow>
-                  ))}
-                </TableBody>
-              </Table>
-            </TabsContent>
-            
-            {/* Precios por Barra */}
-            <TabsContent value="prices">
-              <div className="flex justify-between mb-4">
-                <div>
-                  {hasSelectedProducts && (
-                    <div className="flex items-center space-x-2">
-                      <Badge variant="outline">{selectedProducts.length} seleccionados</Badge>
-                      <Button variant="destructive" size="sm" onClick={deleteSelectedProducts}>
-                        <Trash className="h-4 w-4 mr-1" /> Eliminar
-                      </Button>
-                    </div>
-                  )}
-                </div>
-                <Button size="sm">
-                  <Edit className="mr-2 h-4 w-4" />
-                  Edición Masiva
-                </Button>
-              </div>
-              
-              <Table>
-                <TableHeader>
-                  <TableRow>
-                    <TableHead className="w-[48px]">
-                      <Checkbox 
-                        checked={areAllProductsSelected}
-                        onCheckedChange={toggleAllProducts}
-                      />
-                    </TableHead>
-                    <TableHead>ID</TableHead>
-                    <TableHead>Producto</TableHead>
-                    <TableHead>Bar Central</TableHead>
-                    <TableHead>Bar Norte</TableHead>
-                    <TableHead>Bar Sur</TableHead>
-                    <TableHead>Bar VIP</TableHead>
-                    <TableHead className="text-right">Acciones</TableHead>
-                  </TableRow>
-                </TableHeader>
-                <TableBody>
-                  {pricesByBarData.map(price => (
-                    <TableRow key={price.productId}>
-                      <TableCell>
-                        <Checkbox 
-                          checked={selectedProducts.includes(price.productId)} 
-                          onCheckedChange={() => toggleProductSelection(price.productId)}
-                        />
-                      </TableCell>
-                      <TableCell>#{price.productId}</TableCell>
-                      <TableCell>{price.productName}</TableCell>
-                      <TableCell>{price.barCentral}</TableCell>
-                      <TableCell>{price.barNorte}</TableCell>
-                      <TableCell>{price.barSur}</TableCell>
-                      <TableCell>{price.barVIP}</TableCell>
-                      <TableCell className="text-right">
-                        <DropdownMenu>
-                          <DropdownMenuTrigger asChild>
-                            <Button variant="ghost" size="icon">
-                              <MoreVertical className="h-4 w-4" />
-                            </Button>
-                          </DropdownMenuTrigger>
-                          <DropdownMenuContent align="end">
-                            <DropdownMenuItem>
-                              <Edit className="h-4 w-4 mr-2" />
-                              Editar Precios
                             </DropdownMenuItem>
                           </DropdownMenuContent>
                         </DropdownMenu>
