@@ -15,6 +15,7 @@ import Products from "./pages/Products";
 import Bars from "./pages/Bars";
 import BarDetail from "./pages/BarDetail";
 import Users from "./pages/Users";
+import PR from "./pages/PR";
 import Reports from "./pages/Reports";
 import Settings from "./pages/Settings";
 import NotFound from "./pages/NotFound";
@@ -37,6 +38,7 @@ const App = () => (
             <Route path="bars" element={<Bars />} />
             <Route path="bars/:barId" element={<BarDetail />} />
             <Route path="users" element={<Users />} />
+            <Route path="pr" element={<PR />} />
             <Route path="reports" element={<Reports />} />
             <Route path="settings" element={<Settings />} />
           </Route>
