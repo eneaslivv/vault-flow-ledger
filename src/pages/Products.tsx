@@ -11,52 +11,174 @@ import { Switch } from "@/components/ui/switch";
 import { Label } from "@/components/ui/label";
 import { StockAdjustment } from "@/components/stock/StockAdjustment";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
-import { 
-  BookOpen, 
-  Plus, 
-  Edit, 
-  Trash, 
-  Eye,
-  Filter,
-  PackagePlus,
-  PackageX,
-  Gift,
-  Coins
-} from "lucide-react";
+import { BookOpen, Plus, Edit, Trash, Eye, Filter, PackagePlus, PackageX, Gift, Coins } from "lucide-react";
 import { CustomDrinks } from "@/components/products/CustomDrinks";
 
 // Mock data for products
-const productsData = [
-  { id: 1, name: "Gin Tonic", category: "Bebidas", price: "$800", stockAvailable: 120, limitedStock: false, bars: ["Bar Central", "Bar Norte", "Bar VIP"], isCourtesy: true, courtesyRules: { maxPerNight: 10, allowedRanks: ["VIP", "Premium"] }, isTokenProduct: true, tokenRanks: ["VIP", "Premium"] },
-  { id: 2, name: "Vodka Tonic", category: "Bebidas", price: "$750", stockAvailable: 85, limitedStock: false, bars: ["Bar Central", "Bar Norte"], isCourtesy: true, courtesyRules: { maxPerNight: 8, allowedRanks: ["VIP", "Premium", "Standard"] }, isTokenProduct: true, tokenRanks: ["VIP", "Premium", "Standard"] },
-  { id: 3, name: "Cerveza", category: "Bebidas", price: "$500", stockAvailable: 200, limitedStock: false, bars: ["Bar Central", "Bar Norte", "Bar Sur"], isCourtesy: false, courtesyRules: null, isTokenProduct: true, tokenRanks: ["VIP", "Premium", "Standard"] },
-  { id: 4, name: "Fernet con Coca", category: "Bebidas", price: "$700", stockAvailable: 150, limitedStock: false, bars: ["Bar Central", "Bar Norte", "Bar Sur"], isCourtesy: true, courtesyRules: { maxPerNight: 6, allowedRanks: ["VIP"] }, isTokenProduct: true, tokenRanks: ["VIP"] },
-  { id: 5, name: "Champagne", category: "Bebidas Premium", price: "$12500", stockAvailable: 25, limitedStock: true, bars: ["Bar VIP"], isCourtesy: true, courtesyRules: { maxPerNight: 2, allowedRanks: ["VIP"] }, isTokenProduct: false, tokenRanks: [] },
-  { id: 6, name: "Nachos", category: "Comidas", price: "$600", stockAvailable: 35, limitedStock: true, bars: ["Bar Central", "Bar Norte"], isCourtesy: false, courtesyRules: null, isTokenProduct: true, tokenRanks: ["VIP", "Premium", "Standard"] },
-  { id: 7, name: "Combo Fiesta", category: "Combos", price: "$5000", stockAvailable: 10, limitedStock: true, bars: ["Bar VIP"], isCourtesy: false, courtesyRules: null, isTokenProduct: false, tokenRanks: [] },
-];
+const productsData = [{
+  id: 1,
+  name: "Gin Tonic",
+  category: "Bebidas",
+  price: "$800",
+  stockAvailable: 120,
+  limitedStock: false,
+  bars: ["Bar Central", "Bar Norte", "Bar VIP"],
+  isCourtesy: true,
+  courtesyRules: {
+    maxPerNight: 10,
+    allowedRanks: ["VIP", "Premium"]
+  },
+  isTokenProduct: true,
+  tokenRanks: ["VIP", "Premium"]
+}, {
+  id: 2,
+  name: "Vodka Tonic",
+  category: "Bebidas",
+  price: "$750",
+  stockAvailable: 85,
+  limitedStock: false,
+  bars: ["Bar Central", "Bar Norte"],
+  isCourtesy: true,
+  courtesyRules: {
+    maxPerNight: 8,
+    allowedRanks: ["VIP", "Premium", "Standard"]
+  },
+  isTokenProduct: true,
+  tokenRanks: ["VIP", "Premium", "Standard"]
+}, {
+  id: 3,
+  name: "Cerveza",
+  category: "Bebidas",
+  price: "$500",
+  stockAvailable: 200,
+  limitedStock: false,
+  bars: ["Bar Central", "Bar Norte", "Bar Sur"],
+  isCourtesy: false,
+  courtesyRules: null,
+  isTokenProduct: true,
+  tokenRanks: ["VIP", "Premium", "Standard"]
+}, {
+  id: 4,
+  name: "Fernet con Coca",
+  category: "Bebidas",
+  price: "$700",
+  stockAvailable: 150,
+  limitedStock: false,
+  bars: ["Bar Central", "Bar Norte", "Bar Sur"],
+  isCourtesy: true,
+  courtesyRules: {
+    maxPerNight: 6,
+    allowedRanks: ["VIP"]
+  },
+  isTokenProduct: true,
+  tokenRanks: ["VIP"]
+}, {
+  id: 5,
+  name: "Champagne",
+  category: "Bebidas Premium",
+  price: "$12500",
+  stockAvailable: 25,
+  limitedStock: true,
+  bars: ["Bar VIP"],
+  isCourtesy: true,
+  courtesyRules: {
+    maxPerNight: 2,
+    allowedRanks: ["VIP"]
+  },
+  isTokenProduct: false,
+  tokenRanks: []
+}, {
+  id: 6,
+  name: "Nachos",
+  category: "Comidas",
+  price: "$600",
+  stockAvailable: 35,
+  limitedStock: true,
+  bars: ["Bar Central", "Bar Norte"],
+  isCourtesy: false,
+  courtesyRules: null,
+  isTokenProduct: true,
+  tokenRanks: ["VIP", "Premium", "Standard"]
+}, {
+  id: 7,
+  name: "Combo Fiesta",
+  category: "Combos",
+  price: "$5000",
+  stockAvailable: 10,
+  limitedStock: true,
+  bars: ["Bar VIP"],
+  isCourtesy: false,
+  courtesyRules: null,
+  isTokenProduct: false,
+  tokenRanks: []
+}];
 
 // Mock data for categories
-const categoriesData = [
-  { id: 1, name: "Bebidas", productsCount: 15, description: "Bebidas alcohólicas y no alcohólicas" },
-  { id: 2, name: "Bebidas Premium", productsCount: 8, description: "Bebidas exclusivas y de alta gama" },
-  { id: 3, name: "Comidas", productsCount: 6, description: "Opciones para acompañar bebidas" },
-  { id: 4, name: "Combos", productsCount: 5, description: "Combinaciones de productos con descuento" },
-];
+const categoriesData = [{
+  id: 1,
+  name: "Bebidas",
+  productsCount: 15,
+  description: "Bebidas alcohólicas y no alcohólicas"
+}, {
+  id: 2,
+  name: "Bebidas Premium",
+  productsCount: 8,
+  description: "Bebidas exclusivas y de alta gama"
+}, {
+  id: 3,
+  name: "Comidas",
+  productsCount: 6,
+  description: "Opciones para acompañar bebidas"
+}, {
+  id: 4,
+  name: "Combos",
+  productsCount: 5,
+  description: "Combinaciones de productos con descuento"
+}];
 
 // Mock data for price by bar
-const pricesByBarData = [
-  { productId: 1, productName: "Gin Tonic", barCentral: "$800", barNorte: "$850", barSur: "$850", barVIP: "$950" },
-  { productId: 2, productName: "Vodka Tonic", barCentral: "$750", barNorte: "$800", barSur: "-", barVIP: "-" },
-  { productId: 3, productName: "Cerveza", barCentral: "$500", barNorte: "$550", barSur: "$550", barVIP: "$650" },
-  { productId: 4, productName: "Fernet con Coca", barCentral: "$700", barNorte: "$750", barSur: "$750", barVIP: "-" },
-  { productId: 5, productName: "Champagne", barCentral: "-", barNorte: "-", barSur: "-", barVIP: "$12500" },
-];
-
-const CourtesySettingsDialog = ({ product, onSave }) => {
+const pricesByBarData = [{
+  productId: 1,
+  productName: "Gin Tonic",
+  barCentral: "$800",
+  barNorte: "$850",
+  barSur: "$850",
+  barVIP: "$950"
+}, {
+  productId: 2,
+  productName: "Vodka Tonic",
+  barCentral: "$750",
+  barNorte: "$800",
+  barSur: "-",
+  barVIP: "-"
+}, {
+  productId: 3,
+  productName: "Cerveza",
+  barCentral: "$500",
+  barNorte: "$550",
+  barSur: "$550",
+  barVIP: "$650"
+}, {
+  productId: 4,
+  productName: "Fernet con Coca",
+  barCentral: "$700",
+  barNorte: "$750",
+  barSur: "$750",
+  barVIP: "-"
+}, {
+  productId: 5,
+  productName: "Champagne",
+  barCentral: "-",
+  barNorte: "-",
+  barSur: "-",
+  barVIP: "$12500"
+}];
+const CourtesySettingsDialog = ({
+  product,
+  onSave
+}) => {
   const [maxPerNight, setMaxPerNight] = useState(product?.courtesyRules?.maxPerNight || 5);
   const [allowedRanks, setAllowedRanks] = useState<string[]>(product?.courtesyRules?.allowedRanks || ["VIP"]);
-  
   const toggleRank = (rank: string) => {
     if (allowedRanks.includes(rank)) {
       setAllowedRanks(allowedRanks.filter(r => r !== rank));
@@ -64,7 +186,6 @@ const CourtesySettingsDialog = ({ product, onSave }) => {
       setAllowedRanks([...allowedRanks, rank]);
     }
   };
-  
   const handleSave = () => {
     onSave({
       ...product,
@@ -75,18 +196,10 @@ const CourtesySettingsDialog = ({ product, onSave }) => {
       }
     });
   };
-  
-  return (
-    <div className="space-y-4">
+  return <div className="space-y-4">
       <div>
         <Label htmlFor="maxPerNight">Máximo por noche</Label>
-        <Input 
-          id="maxPerNight" 
-          type="number" 
-          value={maxPerNight} 
-          onChange={(e) => setMaxPerNight(parseInt(e.target.value))}
-          min={1}
-        />
+        <Input id="maxPerNight" type="number" value={maxPerNight} onChange={e => setMaxPerNight(parseInt(e.target.value))} min={1} />
         <p className="text-sm text-muted-foreground mt-1">
           Cantidad máxima de este producto como cortesía por noche
         </p>
@@ -96,27 +209,15 @@ const CourtesySettingsDialog = ({ product, onSave }) => {
         <Label className="mb-2 block">Rangos de PR permitidos</Label>
         <div className="space-y-2">
           <div className="flex items-center space-x-2">
-            <Switch 
-              id="vip-rank" 
-              checked={allowedRanks.includes("VIP")}
-              onCheckedChange={() => toggleRank("VIP")}
-            />
+            <Switch id="vip-rank" checked={allowedRanks.includes("VIP")} onCheckedChange={() => toggleRank("VIP")} />
             <Label htmlFor="vip-rank">VIP</Label>
           </div>
           <div className="flex items-center space-x-2">
-            <Switch 
-              id="premium-rank" 
-              checked={allowedRanks.includes("Premium")}
-              onCheckedChange={() => toggleRank("Premium")}
-            />
+            <Switch id="premium-rank" checked={allowedRanks.includes("Premium")} onCheckedChange={() => toggleRank("Premium")} />
             <Label htmlFor="premium-rank">Premium</Label>
           </div>
           <div className="flex items-center space-x-2">
-            <Switch 
-              id="standard-rank" 
-              checked={allowedRanks.includes("Standard")}
-              onCheckedChange={() => toggleRank("Standard")}
-            />
+            <Switch id="standard-rank" checked={allowedRanks.includes("Standard")} onCheckedChange={() => toggleRank("Standard")} />
             <Label htmlFor="standard-rank">Standard</Label>
           </div>
         </div>
@@ -125,13 +226,13 @@ const CourtesySettingsDialog = ({ product, onSave }) => {
       <div className="flex justify-end">
         <Button onClick={handleSave}>Guardar Configuración</Button>
       </div>
-    </div>
-  );
+    </div>;
 };
-
-const PRTokenSettingsDialog = ({ product, onSave }) => {
+const PRTokenSettingsDialog = ({
+  product,
+  onSave
+}) => {
   const [allowedRanks, setAllowedRanks] = useState<string[]>(product?.tokenRanks || []);
-  
   const toggleRank = (rank: string) => {
     if (allowedRanks.includes(rank)) {
       setAllowedRanks(allowedRanks.filter(r => r !== rank));
@@ -139,7 +240,6 @@ const PRTokenSettingsDialog = ({ product, onSave }) => {
       setAllowedRanks([...allowedRanks, rank]);
     }
   };
-  
   const handleSave = () => {
     onSave({
       ...product,
@@ -147,34 +247,20 @@ const PRTokenSettingsDialog = ({ product, onSave }) => {
       tokenRanks: allowedRanks
     });
   };
-  
-  return (
-    <div className="space-y-4">
+  return <div className="space-y-4">
       <div>
         <Label className="mb-2 block">Rangos de PR permitidos para comprar con tokens</Label>
         <div className="space-y-2">
           <div className="flex items-center space-x-2">
-            <Switch 
-              id="token-vip-rank" 
-              checked={allowedRanks.includes("VIP")}
-              onCheckedChange={() => toggleRank("VIP")}
-            />
+            <Switch id="token-vip-rank" checked={allowedRanks.includes("VIP")} onCheckedChange={() => toggleRank("VIP")} />
             <Label htmlFor="token-vip-rank">VIP</Label>
           </div>
           <div className="flex items-center space-x-2">
-            <Switch 
-              id="token-premium-rank" 
-              checked={allowedRanks.includes("Premium")}
-              onCheckedChange={() => toggleRank("Premium")}
-            />
+            <Switch id="token-premium-rank" checked={allowedRanks.includes("Premium")} onCheckedChange={() => toggleRank("Premium")} />
             <Label htmlFor="token-premium-rank">Premium</Label>
           </div>
           <div className="flex items-center space-x-2">
-            <Switch 
-              id="token-standard-rank" 
-              checked={allowedRanks.includes("Standard")}
-              onCheckedChange={() => toggleRank("Standard")}
-            />
+            <Switch id="token-standard-rank" checked={allowedRanks.includes("Standard")} onCheckedChange={() => toggleRank("Standard")} />
             <Label htmlFor="token-standard-rank">Standard</Label>
           </div>
         </div>
@@ -183,10 +269,8 @@ const PRTokenSettingsDialog = ({ product, onSave }) => {
       <div className="flex justify-end">
         <Button onClick={handleSave}>Guardar Configuración</Button>
       </div>
-    </div>
-  );
+    </div>;
 };
-
 const Products = () => {
   const [selectedBarFilter, setSelectedBarFilter] = useState("all");
   const [selectedCategoryFilter, setSelectedCategoryFilter] = useState("all");
@@ -198,28 +282,27 @@ const Products = () => {
   const [courtesySettingsOpen, setCourtesySettingsOpen] = useState(false);
   const [tokenSettingsOpen, setTokenSettingsOpen] = useState(false);
   const [products, setProducts] = useState(productsData);
-
   const handleAdjustStock = (productName: string = "") => {
     setProductToAdjust(productName);
     setStockAdjustmentOpen(true);
   };
-
   const handleStockReingress = (data: any) => {
     console.log("Reingreso procesado:", data);
     // Aquí iría la lógica para actualizar el stock
   };
-
   const handleStockLoss = (data: any) => {
     console.log("Pérdida registrada:", data);
     // Aquí iría la lógica para actualizar el stock
   };
-  
   const toggleCourtesy = (productId: number) => {
     setProducts(products.map(product => {
       if (product.id === productId) {
         if (product.isCourtesy) {
           // If already a courtesy, just disable it
-          return { ...product, isCourtesy: false };
+          return {
+            ...product,
+            isCourtesy: false
+          };
         } else {
           // If not a courtesy, open settings dialog
           setSelectedProduct(product);
@@ -230,20 +313,20 @@ const Products = () => {
       return product;
     }));
   };
-  
-  const saveCourtesySettings = (updatedProduct) => {
-    setProducts(products.map(product => 
-      product.id === updatedProduct.id ? updatedProduct : product
-    ));
+  const saveCourtesySettings = updatedProduct => {
+    setProducts(products.map(product => product.id === updatedProduct.id ? updatedProduct : product));
     setCourtesySettingsOpen(false);
   };
-  
   const toggleTokenProduct = (productId: number) => {
     setProducts(products.map(product => {
       if (product.id === productId) {
         if (product.isTokenProduct) {
           // If already a token product, just disable it
-          return { ...product, isTokenProduct: false, tokenRanks: [] };
+          return {
+            ...product,
+            isTokenProduct: false,
+            tokenRanks: []
+          };
         } else {
           // If not a token product, open settings dialog
           setSelectedProduct(product);
@@ -254,31 +337,21 @@ const Products = () => {
       return product;
     }));
   };
-  
-  const saveTokenSettings = (updatedProduct) => {
-    setProducts(products.map(product => 
-      product.id === updatedProduct.id ? updatedProduct : product
-    ));
+  const saveTokenSettings = updatedProduct => {
+    setProducts(products.map(product => product.id === updatedProduct.id ? updatedProduct : product));
     setTokenSettingsOpen(false);
   };
-  
+
   // Filter products based on filters
   let filteredProducts = products;
-  
   if (courtesyFilterOn) {
     filteredProducts = filteredProducts.filter(product => product.isCourtesy);
   }
-  
   if (tokenProductFilterOn) {
     filteredProducts = filteredProducts.filter(product => product.isTokenProduct);
   }
-  
-  return (
-    <>
-      <PageHeader 
-        title="Carta & Productos" 
-        description="Gestión de productos, precios y disponibilidad"
-      >
+  return <>
+      <PageHeader title="Carta & Productos" description="Gestión de productos, precios y disponibilidad">
         <Button className="mr-2" onClick={() => handleAdjustStock()}>
           <PackagePlus className="mr-2 h-4 w-4" />
           Ajustar Stock
@@ -299,7 +372,7 @@ const Products = () => {
             <TabsList className="grid w-full grid-cols-4">
               <TabsTrigger value="products">Productos</TabsTrigger>
               <TabsTrigger value="categories">Categorías</TabsTrigger>
-              <TabsTrigger value="prices">Precios por Barra</TabsTrigger>
+              <TabsTrigger value="prices" className="esta seccion eliminemosla no le veo el sentido\n">Precios por Barra</TabsTrigger>
               <TabsTrigger value="custom">Tragos Personalizados</TabsTrigger>
             </TabsList>
             
@@ -350,19 +423,11 @@ const Products = () => {
               <div className="flex justify-between items-center mb-4">
                 <div className="flex items-center space-x-4">
                   <div className="flex items-center space-x-2">
-                    <Switch 
-                      id="courtesyFilter" 
-                      checked={courtesyFilterOn}
-                      onCheckedChange={setCourtesyFilterOn}
-                    />
+                    <Switch id="courtesyFilter" checked={courtesyFilterOn} onCheckedChange={setCourtesyFilterOn} />
                     <Label htmlFor="courtesyFilter">Solo productos para cortesía</Label>
                   </div>
                   <div className="flex items-center space-x-2">
-                    <Switch 
-                      id="tokenProductFilter" 
-                      checked={tokenProductFilterOn}
-                      onCheckedChange={setTokenProductFilterOn}
-                    />
+                    <Switch id="tokenProductFilter" checked={tokenProductFilterOn} onCheckedChange={setTokenProductFilterOn} />
                     <Label htmlFor="tokenProductFilter">Solo productos para PR Tokens</Label>
                   </div>
                 </div>
@@ -383,8 +448,7 @@ const Products = () => {
                   </TableRow>
                 </TableHeader>
                 <TableBody>
-                  {filteredProducts.map((product) => (
-                    <TableRow key={product.id}>
+                  {filteredProducts.map(product => <TableRow key={product.id}>
                       <TableCell>#{product.id}</TableCell>
                       <TableCell>{product.name}</TableCell>
                       <TableCell>{product.category}</TableCell>
@@ -392,69 +456,43 @@ const Products = () => {
                       <TableCell>
                         <div className="flex items-center gap-2">
                           {product.stockAvailable}
-                          {product.limitedStock && (
-                            <Badge variant="outline" className="text-amber-600 border-amber-600">
+                          {product.limitedStock && <Badge variant="outline" className="text-amber-600 border-amber-600">
                               Limitado
-                            </Badge>
-                          )}
+                            </Badge>}
                         </div>
                       </TableCell>
                       <TableCell>
                         <div className="flex flex-wrap gap-1">
-                          {product.bars.map((bar) => (
-                            <Badge key={bar} variant="secondary" className="text-xs">
+                          {product.bars.map(bar => <Badge key={bar} variant="secondary" className="text-xs">
                               {bar}
-                            </Badge>
-                          ))}
+                            </Badge>)}
                         </div>
                       </TableCell>
                       <TableCell>
                         <div className="flex items-center space-x-2">
-                          <Switch 
-                            checked={product.isCourtesy} 
-                            onCheckedChange={() => toggleCourtesy(product.id)}
-                          />
-                          {product.isCourtesy && (
-                            <Button 
-                              variant="ghost" 
-                              size="icon" 
-                              onClick={() => {
-                                setSelectedProduct(product);
-                                setCourtesySettingsOpen(true);
-                              }}
-                            >
+                          <Switch checked={product.isCourtesy} onCheckedChange={() => toggleCourtesy(product.id)} />
+                          {product.isCourtesy && <Button variant="ghost" size="icon" onClick={() => {
+                        setSelectedProduct(product);
+                        setCourtesySettingsOpen(true);
+                      }}>
                               <Gift className="h-4 w-4" />
-                            </Button>
-                          )}
+                            </Button>}
                         </div>
                       </TableCell>
                       <TableCell>
                         <div className="flex items-center space-x-2">
-                          <Switch 
-                            checked={product.isTokenProduct} 
-                            onCheckedChange={() => toggleTokenProduct(product.id)}
-                          />
-                          {product.isTokenProduct && (
-                            <Button 
-                              variant="ghost" 
-                              size="icon" 
-                              onClick={() => {
-                                setSelectedProduct(product);
-                                setTokenSettingsOpen(true);
-                              }}
-                            >
+                          <Switch checked={product.isTokenProduct} onCheckedChange={() => toggleTokenProduct(product.id)} />
+                          {product.isTokenProduct && <Button variant="ghost" size="icon" onClick={() => {
+                        setSelectedProduct(product);
+                        setTokenSettingsOpen(true);
+                      }}>
                               <Coins className="h-4 w-4" />
-                            </Button>
-                          )}
+                            </Button>}
                         </div>
                       </TableCell>
                       <TableCell>
                         <div className="flex gap-2">
-                          <Button 
-                            variant="ghost" 
-                            size="icon"
-                            onClick={() => handleAdjustStock(product.name)}
-                          >
+                          <Button variant="ghost" size="icon" onClick={() => handleAdjustStock(product.name)}>
                             <PackagePlus className="h-4 w-4" />
                           </Button>
                           <Button variant="ghost" size="icon">
@@ -468,8 +506,7 @@ const Products = () => {
                           </Button>
                         </div>
                       </TableCell>
-                    </TableRow>
-                  ))}
+                    </TableRow>)}
                 </TableBody>
               </Table>
             </TabsContent>
@@ -494,8 +531,7 @@ const Products = () => {
                   </TableRow>
                 </TableHeader>
                 <TableBody>
-                  {categoriesData.map((category) => (
-                    <TableRow key={category.id}>
+                  {categoriesData.map(category => <TableRow key={category.id}>
                       <TableCell>#{category.id}</TableCell>
                       <TableCell>{category.name}</TableCell>
                       <TableCell>{category.description}</TableCell>
@@ -511,8 +547,7 @@ const Products = () => {
                           </Button>
                         </div>
                       </TableCell>
-                    </TableRow>
-                  ))}
+                    </TableRow>)}
                 </TableBody>
               </Table>
             </TabsContent>
@@ -539,8 +574,7 @@ const Products = () => {
                   </TableRow>
                 </TableHeader>
                 <TableBody>
-                  {pricesByBarData.map((price) => (
-                    <TableRow key={price.productId}>
+                  {pricesByBarData.map(price => <TableRow key={price.productId}>
                       <TableCell>#{price.productId}</TableCell>
                       <TableCell>{price.productName}</TableCell>
                       <TableCell>{price.barCentral}</TableCell>
@@ -553,8 +587,7 @@ const Products = () => {
                           Editar
                         </Button>
                       </TableCell>
-                    </TableRow>
-                  ))}
+                    </TableRow>)}
                 </TableBody>
               </Table>
             </TabsContent>
@@ -617,11 +650,7 @@ const Products = () => {
                     <span>Productos asociados:</span>
                     <Badge>{products.filter(p => p.isTokenProduct).length}</Badge>
                   </div>
-                  <Button 
-                    size="sm" 
-                    className="w-full"
-                    onClick={() => setTokenProductFilterOn(true)}
-                  >
+                  <Button size="sm" className="w-full" onClick={() => setTokenProductFilterOn(true)}>
                     Configurar productos
                   </Button>
                 </div>
@@ -639,11 +668,7 @@ const Products = () => {
                     <span>Productos asociados:</span>
                     <Badge>{products.filter(p => p.isCourtesy).length}</Badge>
                   </div>
-                  <Button 
-                    size="sm" 
-                    className="w-full"
-                    onClick={() => setCourtesyFilterOn(true)}
-                  >
+                  <Button size="sm" className="w-full" onClick={() => setCourtesyFilterOn(true)}>
                     Configurar productos
                   </Button>
                 </div>
@@ -654,13 +679,7 @@ const Products = () => {
       </Card>
 
       {/* Modal para ajustar stock */}
-      <StockAdjustment 
-        open={stockAdjustmentOpen}
-        onOpenChange={setStockAdjustmentOpen}
-        initialProduct={productToAdjust}
-        onSubmitReingress={handleStockReingress}
-        onSubmitLoss={handleStockLoss}
-      />
+      <StockAdjustment open={stockAdjustmentOpen} onOpenChange={setStockAdjustmentOpen} initialProduct={productToAdjust} onSubmitReingress={handleStockReingress} onSubmitLoss={handleStockLoss} />
       
       {/* Dialog for courtesy settings */}
       <Dialog open={courtesySettingsOpen} onOpenChange={setCourtesySettingsOpen}>
@@ -668,12 +687,7 @@ const Products = () => {
           <DialogHeader>
             <DialogTitle>Configuración de Cortesía: {selectedProduct?.name}</DialogTitle>
           </DialogHeader>
-          {selectedProduct && (
-            <CourtesySettingsDialog 
-              product={selectedProduct} 
-              onSave={saveCourtesySettings} 
-            />
-          )}
+          {selectedProduct && <CourtesySettingsDialog product={selectedProduct} onSave={saveCourtesySettings} />}
         </DialogContent>
       </Dialog>
       
@@ -683,16 +697,9 @@ const Products = () => {
           <DialogHeader>
             <DialogTitle>Configuración de PR Tokens: {selectedProduct?.name}</DialogTitle>
           </DialogHeader>
-          {selectedProduct && (
-            <PRTokenSettingsDialog 
-              product={selectedProduct} 
-              onSave={saveTokenSettings} 
-            />
-          )}
+          {selectedProduct && <PRTokenSettingsDialog product={selectedProduct} onSave={saveTokenSettings} />}
         </DialogContent>
       </Dialog>
-    </>
-  );
+    </>;
 };
-
 export default Products;
