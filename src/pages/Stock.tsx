@@ -1,4 +1,3 @@
-
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { PageHeader } from "@/components/PageHeader";
@@ -16,6 +15,7 @@ import { toast } from "sonner";
 import { StockTransfers } from "@/components/bars/StockTransfers";
 import { StockAdjustment } from "@/components/stock/StockAdjustment";
 import { StockAdjustmentHistory } from "@/components/stock/StockAdjustmentHistory";
+import { MultipleTransfer } from "@/components/stock/MultipleTransfer";
 import { 
   ArrowRight, 
   Box, 
@@ -64,6 +64,7 @@ const Stock = () => {
   const [transferDialogOpen, setTransferDialogOpen] = useState(false);
   const [stockAdjustmentOpen, setStockAdjustmentOpen] = useState(false);
   const [productToAdjust, setProductToAdjust] = useState("");
+  const [multipleTransferOpen, setMultipleTransferOpen] = useState(false);
   
   const assignForm = useForm({
     defaultValues: {
@@ -101,9 +102,18 @@ const Stock = () => {
     setTransferDialogOpen(true);
   };
 
+  const handleMultipleTransfer = () => {
+    setMultipleTransferOpen(true);
+  };
+
   const handleAdjustStock = (productName: string = "") => {
     setProductToAdjust(productName);
     setStockAdjustmentOpen(true);
+  };
+
+  const handleMultipleTransferSuccess = (data: any) => {
+    console.log("Transferencia múltiple completada:", data);
+    // Aquí iría la lógica para actualizar el stock
   };
 
   const onSubmitAssign = (data: any) => {
@@ -150,9 +160,13 @@ const Stock = () => {
         title="Gestión de Stock Avanzado" 
         description="Control de inventario, cortesías y transferencias"
       >
+        <Button className="mr-2" onClick={handleMultipleTransfer}>
+          <ArrowRightLeft className="mr-2 h-4 w-4" />
+          Transferencia Múltiple
+        </Button>
         <Button className="mr-2" onClick={handleNewTransfer}>
           <ArrowRightLeft className="mr-2 h-4 w-4" />
-          Nueva Transferencia
+          Transferencia Simple
         </Button>
         <Button className="mr-2" onClick={() => handleAdjustStock()}>
           <PackagePlus className="mr-2 h-4 w-4" />
@@ -561,6 +575,16 @@ const Stock = () => {
               <Button type="submit">Crear Transferencia</Button>
             </DialogFooter>
           </form>
+        </DialogContent>
+      </Dialog>
+
+      {/* Dialog para transferencia múltiple */}
+      <Dialog open={multipleTransferOpen} onOpenChange={setMultipleTransferOpen}>
+        <DialogContent className="sm:max-w-[900px]">
+          <MultipleTransfer 
+            onClose={() => setMultipleTransferOpen(false)}
+            onSuccess={handleMultipleTransferSuccess} 
+          />
         </DialogContent>
       </Dialog>
 

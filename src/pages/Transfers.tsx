@@ -1,4 +1,3 @@
-
 import { useState } from "react";
 import { PageHeader } from "@/components/PageHeader";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
@@ -6,6 +5,8 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
+import { Dialog, DialogContent } from "@/components/ui/dialog";
+import { MultipleTransfer } from "@/components/stock/MultipleTransfer";
 import { 
   ArrowRight, 
   Box, 
@@ -104,6 +105,7 @@ const Transfers = () => {
   const [selectedBar, setSelectedBar] = useState("Todos");
   const [selectedStatus, setSelectedStatus] = useState("Todos");
   const [searchTerm, setSearchTerm] = useState("");
+  const [multipleTransferOpen, setMultipleTransferOpen] = useState(false);
   
   // Filter transfers data based on selection
   const filteredTransfers = transfersData.filter(item => {
@@ -113,6 +115,11 @@ const Transfers = () => {
                           item.motive.toLowerCase().includes(searchTerm.toLowerCase());
     return matchesBar && matchesStatus && matchesSearch;
   });
+
+  const handleMultipleTransferSuccess = (data: any) => {
+    console.log("Nueva transferencia creada:", data);
+    // Aquí iría la lógica para actualizar la lista de transferencias
+  };
   
   return (
     <>
@@ -120,7 +127,7 @@ const Transfers = () => {
         title="Transferencias entre Bares" 
         description="Gestión de movimientos internos de stock"
       >
-        <Button>
+        <Button onClick={() => setMultipleTransferOpen(true)}>
           <ArrowRightLeft className="mr-2 h-4 w-4" />
           Nueva Transferencia
         </Button>
@@ -296,6 +303,16 @@ const Transfers = () => {
           </Table>
         </CardContent>
       </Card>
+      
+      {/* Dialog para transferencia múltiple */}
+      <Dialog open={multipleTransferOpen} onOpenChange={setMultipleTransferOpen}>
+        <DialogContent className="sm:max-w-[900px]">
+          <MultipleTransfer 
+            onClose={() => setMultipleTransferOpen(false)}
+            onSuccess={handleMultipleTransferSuccess} 
+          />
+        </DialogContent>
+      </Dialog>
     </>
   );
 };
