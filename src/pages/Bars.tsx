@@ -1,4 +1,3 @@
-
 import { useState } from "react";
 import { PageHeader } from "@/components/PageHeader";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
@@ -21,7 +20,6 @@ import {
 import { StatsCard } from "@/components/StatsCard";
 import { useIsMobile } from "@/hooks/use-mobile";
 import { IncomePanel } from "@/components/bars/IncomePanel";
-import { StockReentry } from "@/components/bars/StockReentry";
 import { StockTransfers } from "@/components/bars/StockTransfers";
 import { BarVisualization } from "@/components/bars/BarVisualization";
 
@@ -119,9 +117,8 @@ const Bars = () => {
           </div>
         
           <Tabs defaultValue="income">
-            <TabsList className="grid w-full grid-cols-4">
+            <TabsList className="grid w-full grid-cols-3">
               <TabsTrigger value="income">Ingresos</TabsTrigger>
-              <TabsTrigger value="reentry">Reingresos</TabsTrigger>
               <TabsTrigger value="transfers">Transferencias</TabsTrigger>
               <TabsTrigger value="details">Detalle de Barras</TabsTrigger>
             </TabsList>
@@ -129,11 +126,6 @@ const Bars = () => {
             {/* Ingresos Panel */}
             <TabsContent value="income">
               <IncomePanel selectedBar={selectedBar} />
-            </TabsContent>
-            
-            {/* Reingresos Panel */}
-            <TabsContent value="reentry">
-              <StockReentry selectedBar={selectedBar} />
             </TabsContent>
             
             {/* Transferencias Panel */}
