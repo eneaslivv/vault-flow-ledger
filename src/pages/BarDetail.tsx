@@ -10,9 +10,12 @@ import { Badge } from "@/components/ui/badge";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Input } from "@/components/ui/input";
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
+import { AlertDialog, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger, AlertDialogCancel, AlertDialogAction } from "@/components/ui/alert-dialog";
 import { Form, FormField, FormItem, FormLabel, FormControl, FormDescription, FormMessage } from "@/components/ui/form";
 import { useForm } from "react-hook-form";
 import { Label } from "@/components/ui/label";
+import { StockTransfers } from "@/components/bars/StockTransfers";
+import { toast } from "sonner";
 import { 
   BarChart,
   QrCode,
@@ -24,6 +27,7 @@ import {
   ArrowLeft,
   Plus,
   Minus,
+  Trash2,
 } from "lucide-react";
 
 // Mock data para las barras
@@ -175,12 +179,14 @@ const BarDetail = () => {
   const [selectedProduct, setSelectedProduct] = useState<number | null>(null);
   const [transferDialogOpen, setTransferDialogOpen] = useState(false);
   const [addStockDialogOpen, setAddStockDialogOpen] = useState(false);
+  const [deleteConfirmOpen, setDeleteConfirmOpen] = useState(false);
   
   const form = useForm({
     defaultValues: {
       quantity: 0,
       destination: "",
-      notes: ""
+      notes: "",
+      transferType: "Permanente"
     }
   });
 
@@ -221,16 +227,30 @@ const BarDetail = () => {
     setAddStockDialogOpen(true);
   };
 
+  const handleDeleteProduct = (productId: number) => {
+    setSelectedProduct(productId);
+    setDeleteConfirmOpen(true);
+  };
+
   const onSubmitTransfer = (data: any) => {
     console.log("Transferencia enviada:", data);
     setTransferDialogOpen(false);
+    toast.success(`${data.quantity} unidades transferidas a ${destinationBars.find(b => b.value === data.destination)?.label}`);
     // Aquí iría la lógica para actualizar el stock
   };
 
   const onSubmitAddStock = (data: any) => {
     console.log("Stock agregado:", data);
     setAddStockDialogOpen(false);
+    toast.success(`${data.quantity} ${data.unit} de ${data.productName} agregados al inventario`);
     // Aquí iría la lógica para actualizar el stock
+  };
+
+  const confirmDelete = () => {
+    console.log("Producto eliminado:", selectedProduct);
+    setDeleteConfirmOpen(false);
+    toast.success("Producto eliminado del inventario");
+    // Aquí iría la lógica para eliminar el producto
   };
 
   const selectedProductData = selectedProduct 
@@ -294,9 +314,10 @@ const BarDetail = () => {
         </CardHeader>
         <CardContent>
           <Tabs value={activeTab} onValueChange={setActiveTab}>
-            <TabsList className="grid w-full grid-cols-4">
+            <TabsList className="grid w-full grid-cols-5">
               <TabsTrigger value="statistics">Estadísticas</TabsTrigger>
               <TabsTrigger value="stock">Inventario</TabsTrigger>
+              <TabsTrigger value="transfers">Transferencias</TabsTrigger>
               <TabsTrigger value="staff">Personal</TabsTrigger>
               <TabsTrigger value="qrcodes">Códigos QR</TabsTrigger>
             </TabsList>
@@ -367,14 +388,26 @@ const BarDetail = () => {
                             </Badge>
                           </TableCell>
                           <TableCell>
-                            <Button 
-                              variant="outline" 
-                              size="sm"
-                              onClick={() => handleTransferStock(product.id)}
-                            >
-                              <ArrowRightLeft className="mr-2 h-4 w-4" />
-                              Transferir
-                            </Button>
+                            <div className="flex gap-2">
+                              <Button 
+                                variant="outline" 
+                                size="sm"
+                                onClick={() => handleTransferStock(product.id)}
+                              >
+                                <ArrowRightLeft className="mr-2 h-4 w-4" />
+                                Transferir
+                              </Button>
+                              
+                              <Button 
+                                variant="outline" 
+                                size="sm"
+                                onClick={() => handleDeleteProduct(product.id)}
+                                className="text-red-500 hover:text-red-700"
+                              >
+                                <Trash2 className="mr-2 h-4 w-4" />
+                                Eliminar
+                              </Button>
+                            </div>
                           </TableCell>
                         </TableRow>
                       ))}
@@ -382,6 +415,11 @@ const BarDetail = () => {
                   </Table>
                 </CardContent>
               </Card>
+            </TabsContent>
+            
+            {/* Tab: Transferencias */}
+            <TabsContent value="transfers">
+              <StockTransfers selectedBar={barData.name} />
             </TabsContent>
             
             {/* Tab: Personal */}
@@ -505,6 +543,21 @@ const BarDetail = () => {
                 </Select>
               </div>
               <div className="space-y-2">
+                <Label htmlFor="transferType">Tipo de transferencia</Label>
+                <Select
+                  value={form.watch("transferType")}
+                  onValueChange={(value) => form.setValue("transferType", value)}
+                >
+                  <SelectTrigger>
+                    <SelectValue placeholder="Selecciona el tipo de transferencia" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="Permanente">Permanente</SelectItem>
+                    <SelectItem value="Temporal">Temporal</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+              <div className="space-y-2">
                 <Label htmlFor="notes">Notas</Label>
                 <Input id="notes" {...form.register("notes")} />
               </div>
@@ -590,6 +643,24 @@ const BarDetail = () => {
           </form>
         </DialogContent>
       </Dialog>
+
+      {/* Alert Dialog para confirmar eliminación */}
+      <AlertDialog open={deleteConfirmOpen} onOpenChange={setDeleteConfirmOpen}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>¿Estás seguro?</AlertDialogTitle>
+            <AlertDialogDescription>
+              Esta acción eliminará permanentemente {selectedProductData?.name} del inventario de {barData.name}.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>Cancelar</AlertDialogCancel>
+            <AlertDialogAction onClick={confirmDelete} className="bg-red-500 hover:bg-red-600">
+              Eliminar
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </>
   );
 };

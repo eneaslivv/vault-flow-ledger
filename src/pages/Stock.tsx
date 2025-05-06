@@ -1,21 +1,28 @@
 
 import { useState } from "react";
+import { useNavigate } from "react-router-dom";
 import { PageHeader } from "@/components/PageHeader";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
+import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from "@/components/ui/dialog";
+import { Label } from "@/components/ui/label";
+import { Input } from "@/components/ui/input";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { useForm } from "react-hook-form";
+import { toast } from "sonner";
+import { StockTransfers } from "@/components/bars/StockTransfers";
 import { 
   ArrowRight, 
   Box, 
   Gift, 
   Search,
   ShoppingCart,
-  ArrowRightLeft
+  ArrowRightLeft,
+  Plus
 } from "lucide-react";
-import { Input } from "@/components/ui/input";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 
 // Mock data for stock
 const stockData = [
@@ -34,13 +41,6 @@ const courtesiesStockData = [
   { id: 3, product: "Gin Tonic Beefeater", category: "Alcoholico", quantity: 3, bar: "Bar Norte", givenBy: "Sistema" },
 ];
 
-// Mock data for transfers
-const transfersStockData = [
-  { id: 1, product: "Agua Mineral 500ml", quantity: 50, fromBar: "Bar Central", toBar: "El Alamo", date: "2023-05-02", status: "Completada" },
-  { id: 2, product: "Red Bull 250ml", quantity: 24, fromBar: "Bar Norte", toBar: "Bar Sur", date: "2023-05-01", status: "Pendiente" },
-  { id: 3, product: "Vodka Absolut 750ml", quantity: 5, fromBar: "Bar Central", toBar: "Bar Norte", date: "2023-04-30", status: "Completada" },
-];
-
 // Mock data for unredeemed
 const unredeemedStockData = [
   { id: 1, product: "Gin Tonic Beefeater", quantity: 2, bar: "Bar Norte", date: "2023-05-02", user: "Usuario ID 123" },
@@ -51,8 +51,32 @@ const unredeemedStockData = [
 const bars = ["Todos", "Bar Central", "Bar Norte", "Bar Sur", "El Alamo"];
 
 const Stock = () => {
+  const navigate = useNavigate();
   const [selectedBar, setSelectedBar] = useState("Todos");
   const [searchTerm, setSearchTerm] = useState("");
+  const [activeTab, setActiveTab] = useState("stock");
+  const [assignStockDialogOpen, setAssignStockDialogOpen] = useState(false);
+  const [selectedProduct, setSelectedProduct] = useState<number | null>(null);
+  const [transferDialogOpen, setTransferDialogOpen] = useState(false);
+  
+  const assignForm = useForm({
+    defaultValues: {
+      quantity: 0,
+      destination: "",
+      notes: ""
+    }
+  });
+
+  const transferForm = useForm({
+    defaultValues: {
+      product: "",
+      quantity: 0,
+      fromBar: "",
+      toBar: "",
+      transferType: "Permanente",
+      notes: ""
+    }
+  });
   
   // Filter stock data based on selection
   const filteredStock = stockData.filter(item => {
@@ -61,6 +85,41 @@ const Stock = () => {
                           item.category.toLowerCase().includes(searchTerm.toLowerCase());
     return matchesBar && matchesSearch;
   });
+
+  const handleAssignStock = (productId: number) => {
+    setSelectedProduct(productId);
+    setAssignStockDialogOpen(true);
+  };
+
+  const handleNewTransfer = () => {
+    setTransferDialogOpen(true);
+  };
+
+  const onSubmitAssign = (data: any) => {
+    console.log("Stock asignado:", data);
+    const product = stockData.find(item => item.id === selectedProduct);
+    setAssignStockDialogOpen(false);
+    toast.success(`${data.quantity} unidades de ${product?.product} asignadas a ${data.destination}`);
+    // Aquí iría la lógica para actualizar el stock
+  };
+
+  const onSubmitTransfer = (data: any) => {
+    console.log("Transferencia creada:", data);
+    setTransferDialogOpen(false);
+    toast.success(`${data.quantity} unidades de ${data.product} transferidas de ${data.fromBar} a ${data.toBar}`);
+    // Aquí iría la lógica para crear la transferencia
+  };
+
+  const goToBarDetail = (barName: string) => {
+    const bar = bars.findIndex(b => b === barName);
+    if (bar > 0) { // Skipping "Todos"
+      navigate(`/bars/${bar}`);
+    }
+  };
+  
+  const selectedProductData = selectedProduct 
+    ? stockData.find(product => product.id === selectedProduct) 
+    : null;
   
   return (
     <>
@@ -68,7 +127,7 @@ const Stock = () => {
         title="Gestión de Stock Avanzado" 
         description="Control de inventario, cortesías y transferencias"
       >
-        <Button className="mr-2">
+        <Button className="mr-2" onClick={handleNewTransfer}>
           <ArrowRightLeft className="mr-2 h-4 w-4" />
           Nueva Transferencia
         </Button>
@@ -143,7 +202,7 @@ const Stock = () => {
             </Select>
           </div>
           
-          <Tabs defaultValue="stock">
+          <Tabs value={activeTab} onValueChange={setActiveTab}>
             <TabsList className="grid w-full grid-cols-4">
               <TabsTrigger value="stock">En Stock</TabsTrigger>
               <TabsTrigger value="courtesies">Cortesías</TabsTrigger>
@@ -170,7 +229,15 @@ const Stock = () => {
                       <TableCell className="font-medium">{item.product}</TableCell>
                       <TableCell>{item.category}</TableCell>
                       <TableCell>{item.quantity}</TableCell>
-                      <TableCell>{item.bar}</TableCell>
+                      <TableCell>
+                        <Button 
+                          variant="link" 
+                          className="p-0 h-auto font-normal text-blue-600 hover:text-blue-800"
+                          onClick={() => goToBarDetail(item.bar)}
+                        >
+                          {item.bar}
+                        </Button>
+                      </TableCell>
                       <TableCell>
                         <Badge variant="outline" className="bg-green-50 text-green-700 border-green-200">
                           {item.status}
@@ -178,8 +245,13 @@ const Stock = () => {
                       </TableCell>
                       <TableCell>
                         <div className="flex gap-2">
-                          <Button variant="ghost" size="icon">
-                            <ArrowRightLeft className="h-4 w-4" />
+                          <Button 
+                            variant="outline" 
+                            size="sm"
+                            onClick={() => handleAssignStock(item.id)}
+                          >
+                            <ArrowRightLeft className="mr-2 h-4 w-4" />
+                            Asignar
                           </Button>
                           <Button variant="ghost" size="icon">
                             <Gift className="h-4 w-4" />
@@ -211,7 +283,15 @@ const Stock = () => {
                       <TableCell className="font-medium">{item.product}</TableCell>
                       <TableCell>{item.category}</TableCell>
                       <TableCell>{item.quantity}</TableCell>
-                      <TableCell>{item.bar}</TableCell>
+                      <TableCell>
+                        <Button 
+                          variant="link" 
+                          className="p-0 h-auto font-normal text-blue-600 hover:text-blue-800"
+                          onClick={() => goToBarDetail(item.bar)}
+                        >
+                          {item.bar}
+                        </Button>
+                      </TableCell>
                       <TableCell>{item.givenBy}</TableCell>
                       <TableCell>
                         <Button variant="ghost" size="icon">
@@ -226,40 +306,7 @@ const Stock = () => {
             
             {/* Transferencias */}
             <TabsContent value="transfers">
-              <Table>
-                <TableHeader>
-                  <TableRow>
-                    <TableHead>Producto</TableHead>
-                    <TableHead>Cantidad</TableHead>
-                    <TableHead>Bar Origen</TableHead>
-                    <TableHead>Bar Destino</TableHead>
-                    <TableHead>Fecha</TableHead>
-                    <TableHead>Estado</TableHead>
-                  </TableRow>
-                </TableHeader>
-                <TableBody>
-                  {transfersStockData.map(item => (
-                    <TableRow key={item.id}>
-                      <TableCell className="font-medium">{item.product}</TableCell>
-                      <TableCell>{item.quantity}</TableCell>
-                      <TableCell>{item.fromBar}</TableCell>
-                      <TableCell>{item.toBar}</TableCell>
-                      <TableCell>{item.date}</TableCell>
-                      <TableCell>
-                        <Badge 
-                          variant="outline" 
-                          className={item.status === "Completada" 
-                            ? "bg-green-50 text-green-700 border-green-200" 
-                            : "bg-amber-50 text-amber-700 border-amber-200"
-                          }
-                        >
-                          {item.status}
-                        </Badge>
-                      </TableCell>
-                    </TableRow>
-                  ))}
-                </TableBody>
-              </Table>
+              <StockTransfers selectedBar="all" />
             </TabsContent>
             
             {/* No Retirados */}
@@ -280,7 +327,15 @@ const Stock = () => {
                     <TableRow key={item.id}>
                       <TableCell className="font-medium">{item.product}</TableCell>
                       <TableCell>{item.quantity}</TableCell>
-                      <TableCell>{item.bar}</TableCell>
+                      <TableCell>
+                        <Button 
+                          variant="link" 
+                          className="p-0 h-auto font-normal text-blue-600 hover:text-blue-800"
+                          onClick={() => goToBarDetail(item.bar)}
+                        >
+                          {item.bar}
+                        </Button>
+                      </TableCell>
                       <TableCell>{item.date}</TableCell>
                       <TableCell>{item.user}</TableCell>
                       <TableCell>
@@ -294,6 +349,165 @@ const Stock = () => {
           </Tabs>
         </CardContent>
       </Card>
+
+      {/* Dialog para asignar stock */}
+      <Dialog open={assignStockDialogOpen} onOpenChange={setAssignStockDialogOpen}>
+        <DialogContent className="sm:max-w-[425px]">
+          <DialogHeader>
+            <DialogTitle>Asignar Stock a Barra</DialogTitle>
+            <DialogDescription>
+              Asignar unidades de {selectedProductData?.product} a una barra
+            </DialogDescription>
+          </DialogHeader>
+          <form onSubmit={assignForm.handleSubmit(onSubmitAssign)}>
+            <div className="grid gap-4 py-4">
+              <div className="space-y-2">
+                <Label htmlFor="quantity">Cantidad a asignar</Label>
+                <Input
+                  id="quantity"
+                  type="number"
+                  max={selectedProductData?.quantity}
+                  {...assignForm.register("quantity", { 
+                    valueAsNumber: true,
+                    max: { 
+                      value: selectedProductData?.quantity || 0, 
+                      message: `No puedes asignar más de ${selectedProductData?.quantity} unidades` 
+                    } 
+                  })}
+                />
+                {assignForm.formState.errors.quantity && (
+                  <p className="text-red-500 text-sm">{assignForm.formState.errors.quantity.message}</p>
+                )}
+              </div>
+              <div className="space-y-2">
+                <Label htmlFor="destination">Barra de destino</Label>
+                <Select
+                  value={assignForm.watch("destination")}
+                  onValueChange={(value) => assignForm.setValue("destination", value)}
+                >
+                  <SelectTrigger>
+                    <SelectValue placeholder="Selecciona la barra de destino" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {bars
+                      .filter(bar => bar !== "Todos" && bar !== selectedProductData?.bar)
+                      .map((bar) => (
+                        <SelectItem key={bar} value={bar}>{bar}</SelectItem>
+                      ))}
+                  </SelectContent>
+                </Select>
+              </div>
+              <div className="space-y-2">
+                <Label htmlFor="notes">Notas</Label>
+                <Input id="notes" {...assignForm.register("notes")} />
+              </div>
+            </div>
+            <DialogFooter>
+              <Button type="submit">Asignar Stock</Button>
+            </DialogFooter>
+          </form>
+        </DialogContent>
+      </Dialog>
+
+      {/* Dialog para nueva transferencia */}
+      <Dialog open={transferDialogOpen} onOpenChange={setTransferDialogOpen}>
+        <DialogContent className="sm:max-w-[425px]">
+          <DialogHeader>
+            <DialogTitle>Nueva Transferencia</DialogTitle>
+            <DialogDescription>
+              Crear una nueva transferencia entre barras
+            </DialogDescription>
+          </DialogHeader>
+          <form onSubmit={transferForm.handleSubmit(onSubmitTransfer)}>
+            <div className="grid gap-4 py-4">
+              <div className="space-y-2">
+                <Label htmlFor="product">Producto</Label>
+                <Input 
+                  id="product" 
+                  {...transferForm.register("product", { required: "El producto es requerido" })} 
+                />
+                {transferForm.formState.errors.product && (
+                  <p className="text-red-500 text-sm">{transferForm.formState.errors.product.message}</p>
+                )}
+              </div>
+              <div className="space-y-2">
+                <Label htmlFor="quantity">Cantidad</Label>
+                <Input
+                  id="quantity"
+                  type="number"
+                  min={1}
+                  {...transferForm.register("quantity", { 
+                    valueAsNumber: true,
+                    required: "La cantidad es requerida",
+                    min: { value: 1, message: "La cantidad debe ser mayor a 0" }
+                  })}
+                />
+                {transferForm.formState.errors.quantity && (
+                  <p className="text-red-500 text-sm">{transferForm.formState.errors.quantity.message}</p>
+                )}
+              </div>
+              <div className="space-y-2">
+                <Label htmlFor="fromBar">Barra de origen</Label>
+                <Select
+                  value={transferForm.watch("fromBar")}
+                  onValueChange={(value) => transferForm.setValue("fromBar", value)}
+                >
+                  <SelectTrigger>
+                    <SelectValue placeholder="Selecciona la barra de origen" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {bars
+                      .filter(bar => bar !== "Todos")
+                      .map((bar) => (
+                        <SelectItem key={bar} value={bar}>{bar}</SelectItem>
+                      ))}
+                  </SelectContent>
+                </Select>
+              </div>
+              <div className="space-y-2">
+                <Label htmlFor="toBar">Barra de destino</Label>
+                <Select
+                  value={transferForm.watch("toBar")}
+                  onValueChange={(value) => transferForm.setValue("toBar", value)}
+                >
+                  <SelectTrigger>
+                    <SelectValue placeholder="Selecciona la barra de destino" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {bars
+                      .filter(bar => bar !== "Todos" && bar !== transferForm.watch("fromBar"))
+                      .map((bar) => (
+                        <SelectItem key={bar} value={bar}>{bar}</SelectItem>
+                      ))}
+                  </SelectContent>
+                </Select>
+              </div>
+              <div className="space-y-2">
+                <Label htmlFor="transferType">Tipo de transferencia</Label>
+                <Select
+                  value={transferForm.watch("transferType")}
+                  onValueChange={(value) => transferForm.setValue("transferType", value)}
+                >
+                  <SelectTrigger>
+                    <SelectValue placeholder="Selecciona el tipo de transferencia" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="Permanente">Permanente</SelectItem>
+                    <SelectItem value="Temporal">Temporal</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+              <div className="space-y-2">
+                <Label htmlFor="notes">Notas</Label>
+                <Input id="notes" {...transferForm.register("notes")} />
+              </div>
+            </div>
+            <DialogFooter>
+              <Button type="submit">Crear Transferencia</Button>
+            </DialogFooter>
+          </form>
+        </DialogContent>
+      </Dialog>
     </>
   );
 };
