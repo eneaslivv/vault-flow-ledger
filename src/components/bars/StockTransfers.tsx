@@ -7,10 +7,10 @@ import { Button } from "@/components/ui/button";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Input } from "@/components/ui/input";
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Badge } from "@/components/ui/badge";
 import { toast } from "sonner";
 import { ArrowRightLeft, AlertCircle } from "lucide-react";
+import { MultiSelectBarsField } from "@/components/bars/MultiSelectBarsField";
 
 // Mock data for bar stock items - would be replaced with real data from API
 const barStockItems = [
@@ -25,8 +25,8 @@ const barStockItems = [
 export const StockTransfers = ({ selectedBar }: { selectedBar: string }) => {
   const [selectedItems, setSelectedItems] = useState<{[key: number]: boolean}>({});
   const [transferQuantities, setTransferQuantities] = useState<{[key: number]: number}>({});
-  const [targetBar, setTargetBar] = useState("");
   const [dialogOpen, setDialogOpen] = useState(false);
+  const [selectedDestinationBars, setSelectedDestinationBars] = useState<string[]>([]);
   
   // Filter stock items for the selected bar, for a real app this would use the selectedBar param
   const filteredStockItems = barStockItems;
@@ -97,23 +97,27 @@ export const StockTransfers = ({ selectedBar }: { selectedBar: string }) => {
       return;
     }
     
-    if (!targetBar) {
-      toast.error("Selecciona una barra destino");
+    if (selectedDestinationBars.length === 0) {
+      toast.error("Selecciona al menos una barra destino");
       return;
     }
     
     // Process transfer
-    toast.success(`Se ha transferido stock exitosamente a ${targetBar}`);
+    toast.success(`Se ha transferido stock exitosamente a ${selectedDestinationBars.length} barras`);
     
     // Reset state
     setSelectedItems({});
     setTransferQuantities({});
-    setTargetBar("");
+    setSelectedDestinationBars([]);
     setDialogOpen(false);
   };
   
   const getSelectedItemsCount = () => {
     return Object.keys(selectedItems).filter(key => selectedItems[Number(key)]).length;
+  };
+
+  const handleDestinationBarsChange = (bars: string[]) => {
+    setSelectedDestinationBars(bars);
   };
   
   return (
@@ -149,24 +153,17 @@ export const StockTransfers = ({ selectedBar }: { selectedBar: string }) => {
               <DialogHeader>
                 <DialogTitle>Transferir productos</DialogTitle>
                 <DialogDescription>
-                  Selecciona la barra destino para transferir los productos seleccionados
+                  Selecciona las barras destino para transferir los productos seleccionados
                 </DialogDescription>
               </DialogHeader>
               
               <div className="py-4">
                 <div className="mb-4">
-                  <label className="text-sm font-medium">Barra destino</label>
-                  <Select value={targetBar} onValueChange={setTargetBar}>
-                    <SelectTrigger>
-                      <SelectValue placeholder="Seleccionar barra destino" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="barCentral">Bar Central</SelectItem>
-                      <SelectItem value="barNorte">Bar Norte</SelectItem>
-                      <SelectItem value="barSur">Bar Sur</SelectItem>
-                      <SelectItem value="elAlamo">El Alamo</SelectItem>
-                    </SelectContent>
-                  </Select>
+                  <label className="text-sm font-medium">Barras destino</label>
+                  <MultiSelectBarsField 
+                    onSelectionChange={handleDestinationBarsChange}
+                    placeholder="Seleccionar barras destino"
+                  />
                 </div>
                 
                 <div className="border rounded-md">

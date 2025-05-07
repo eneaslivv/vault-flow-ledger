@@ -5,7 +5,15 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { Dialog, DialogContent, DialogHeader, DialogFooter, DialogTitle, DialogDescription } from "@/components/ui/dialog";
+import { Form, FormControl, FormDescription, FormField, FormItem, FormLabel } from "@/components/ui/form";
+import { useForm } from "react-hook-form";
+import { Input } from "@/components/ui/input";
+import { Textarea } from "@/components/ui/textarea";
+import { toast } from "sonner";
 import { BoxesIcon } from "lucide-react";
+import { ProductSearchField } from "@/components/products/ProductSearchField";
+import { MultiSelectBarsField } from "@/components/bars/MultiSelectBarsField";
 
 // Mock data for stock reentry
 const stockReentryData = [
@@ -70,8 +78,66 @@ const consumptionMetricsData = [
   { product: "Whisky Johnnie Walker", sold: 8, consumed: 7, percentage: "88%" },
 ];
 
+interface ReentryFormData {
+  product: string;
+  productId?: number;
+  quantity: number;
+  returnType: string;
+  status: string;
+  destinationBars: string[];
+  economicValue: number;
+  observations: string;
+}
+
 export const StockReentry = ({ selectedBar }: { selectedBar: string }) => {
   const [statusFilter, setStatusFilter] = useState("all");
+  const [reentryDialogOpen, setReentryDialogOpen] = useState(false);
+  const [selectedProduct, setSelectedProduct] = useState<any | null>(null);
+  const [selectedBars, setSelectedBars] = useState<string[]>([]);
+  
+  const form = useForm<ReentryFormData>({
+    defaultValues: {
+      product: "",
+      quantity: 1,
+      returnType: "total",
+      status: "sinAbrir",
+      destinationBars: [],
+      economicValue: 0,
+      observations: ""
+    }
+  });
+
+  const handleProductSelect = (product: any) => {
+    setSelectedProduct(product);
+    form.setValue("product", product.name);
+    form.setValue("productId", product.id);
+    
+    // Calculate economic value based on selected product and quantity
+    const quantity = form.watch("quantity");
+    form.setValue("economicValue", quantity * product.price);
+  };
+
+  const handleBarsSelection = (bars: string[]) => {
+    setSelectedBars(bars);
+    form.setValue("destinationBars", bars);
+  };
+
+  const onQuantityChange = (quantity: number) => {
+    form.setValue("quantity", quantity);
+    
+    if (selectedProduct) {
+      form.setValue("economicValue", quantity * selectedProduct.price);
+    }
+  };
+
+  const onSubmitReentry = (data: ReentryFormData) => {
+    console.log("Reentry data:", data);
+    toast.success(`${data.quantity} unidades de ${data.product} reingresadas al stock`);
+    setReentryDialogOpen(false);
+    form.reset();
+    setSelectedProduct(null);
+    setSelectedBars([]);
+  };
   
   return (
     <div className="space-y-6">
@@ -88,7 +154,7 @@ export const StockReentry = ({ selectedBar }: { selectedBar: string }) => {
           </SelectContent>
         </Select>
         
-        <Button className="w-full md:w-auto">
+        <Button className="w-full md:w-auto" onClick={() => setReentryDialogOpen(true)}>
           <BoxesIcon className="mr-2 h-4 w-4" />
           Registrar Reingreso
         </Button>
@@ -179,6 +245,166 @@ export const StockReentry = ({ selectedBar }: { selectedBar: string }) => {
           </CardContent>
         </Card>
       </div>
+
+      {/* Reentry Dialog */}
+      <Dialog open={reentryDialogOpen} onOpenChange={setReentryDialogOpen}>
+        <DialogContent className="sm:max-w-[550px]">
+          <DialogHeader>
+            <DialogTitle>Registrar Reingreso de Producto</DialogTitle>
+            <DialogDescription>
+              Ingrese los detalles del producto a reingresar al stock
+            </DialogDescription>
+          </DialogHeader>
+
+          <Form {...form}>
+            <form onSubmit={form.handleSubmit(onSubmitReentry)} className="space-y-4 py-2">
+              <FormField
+                control={form.control}
+                name="product"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Producto</FormLabel>
+                    <FormControl>
+                      <ProductSearchField
+                        onSelect={handleProductSelect}
+                        selectedProduct={field.value}
+                        placeholder="Buscar producto..."
+                      />
+                    </FormControl>
+                  </FormItem>
+                )}
+              />
+
+              <FormField
+                control={form.control}
+                name="quantity"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Cantidad</FormLabel>
+                    <FormControl>
+                      <Input 
+                        type="number" 
+                        min={1} 
+                        {...field} 
+                        onChange={(e) => {
+                          const value = parseInt(e.target.value);
+                          field.onChange(value);
+                          onQuantityChange(value);
+                        }}
+                      />
+                    </FormControl>
+                  </FormItem>
+                )}
+              />
+
+              <FormField
+                control={form.control}
+                name="returnType"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Tipo de Reingreso</FormLabel>
+                    <Select 
+                      onValueChange={field.onChange} 
+                      defaultValue={field.value}
+                    >
+                      <FormControl>
+                        <SelectTrigger>
+                          <SelectValue placeholder="Selecciona un tipo" />
+                        </SelectTrigger>
+                      </FormControl>
+                      <SelectContent>
+                        <SelectItem value="total">Devolución Total</SelectItem>
+                        <SelectItem value="parcial">Devolución Parcial</SelectItem>
+                        <SelectItem value="transferencia">Transferencia devuelta</SelectItem>
+                        <SelectItem value="error">Corrección de Error</SelectItem>
+                      </SelectContent>
+                    </Select>
+                  </FormItem>
+                )}
+              />
+
+              <FormField
+                control={form.control}
+                name="status"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Estado del Producto</FormLabel>
+                    <Select 
+                      onValueChange={field.onChange} 
+                      defaultValue={field.value}
+                    >
+                      <FormControl>
+                        <SelectTrigger>
+                          <SelectValue placeholder="Selecciona un estado" />
+                        </SelectTrigger>
+                      </FormControl>
+                      <SelectContent>
+                        <SelectItem value="sinAbrir">Sin abrir</SelectItem>
+                        <SelectItem value="reutilizable">Reutilizable (abierto)</SelectItem>
+                        <SelectItem value="parcial">Parcialmente usado</SelectItem>
+                      </SelectContent>
+                    </Select>
+                  </FormItem>
+                )}
+              />
+
+              <FormField
+                control={form.control}
+                name="economicValue"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Valor económico ($)</FormLabel>
+                    <FormControl>
+                      <Input 
+                        type="number" 
+                        min={0} 
+                        step="0.01" 
+                        {...field} 
+                        onChange={(e) => field.onChange(parseFloat(e.target.value) || 0)}
+                      />
+                    </FormControl>
+                    <FormDescription>
+                      Valor económico total del reingreso
+                    </FormDescription>
+                  </FormItem>
+                )}
+              />
+
+              <FormItem>
+                <FormLabel>Barras de destino</FormLabel>
+                <MultiSelectBarsField 
+                  onSelectionChange={handleBarsSelection}
+                  initialSelection={selectedBars}
+                  placeholder="Seleccionar barras de destino"
+                />
+                <FormDescription>
+                  Selecciona las barras donde se enviará este producto
+                </FormDescription>
+              </FormItem>
+
+              <FormField
+                control={form.control}
+                name="observations"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Observaciones</FormLabel>
+                    <FormControl>
+                      <Textarea placeholder="Detalles adicionales sobre el reingreso" {...field} />
+                    </FormControl>
+                  </FormItem>
+                )}
+              />
+
+              <DialogFooter>
+                <Button type="button" variant="outline" onClick={() => setReentryDialogOpen(false)}>
+                  Cancelar
+                </Button>
+                <Button type="submit">Registrar Reingreso</Button>
+              </DialogFooter>
+            </form>
+          </Form>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 };

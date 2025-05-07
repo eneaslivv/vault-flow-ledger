@@ -1,5 +1,5 @@
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { toast } from "sonner";
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Form, FormControl, FormDescription, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
@@ -11,6 +11,8 @@ import { Textarea } from "@/components/ui/textarea";
 import { Switch } from "@/components/ui/switch";
 import { useForm } from "react-hook-form";
 import { ArrowDownUp, PackagePlus, PackageX } from "lucide-react";
+import { ProductSearchField } from "@/components/products/ProductSearchField";
+import { MultiSelectBarsField } from "@/components/bars/MultiSelectBarsField";
 
 interface StockAdjustmentProps {
   open: boolean;
@@ -23,20 +25,25 @@ interface StockAdjustmentProps {
 
 export interface StockReingress {
   product: string;
+  productId?: number;
   quantity: number;
   reason: string;
   customReason?: string;
   isOpened: boolean;
   associatedCost: number;
+  economicValue: number;  // Added field for economic value tracking
   observations?: string;
+  destinationBars?: string[]; // Added field for destination bars
 }
 
 export interface StockLoss {
   product: string;
+  productId?: number;
   quantity: number;
   reason: string;
   customReason?: string;
   previouslyRegistered: boolean;
+  economicValue: number;  // Added field for economic value tracking
   observations?: string;
 }
 
@@ -49,6 +56,9 @@ export function StockAdjustment({
   onSubmitLoss
 }: StockAdjustmentProps) {
   const [activeTab, setActiveTab] = useState<"reingress" | "loss">("reingress");
+  const [selectedProductReingress, setSelectedProductReingress] = useState<any | null>(null);
+  const [selectedProductLoss, setSelectedProductLoss] = useState<any | null>(null);
+  const [selectedBars, setSelectedBars] = useState<string[]>([]);
   
   const reingress = useForm<StockReingress>({
     defaultValues: {
@@ -58,7 +68,9 @@ export function StockAdjustment({
       customReason: "",
       isOpened: false,
       associatedCost: 0,
-      observations: ""
+      economicValue: 0,
+      observations: "",
+      destinationBars: []
     }
   });
 
@@ -69,9 +81,55 @@ export function StockAdjustment({
       reason: "",
       customReason: "",
       previouslyRegistered: true,
+      economicValue: 0,
       observations: ""
     }
   });
+
+  // Update economic value when product or quantity changes for reingress
+  useEffect(() => {
+    if (selectedProductReingress && reingress.watch("quantity")) {
+      const quantity = reingress.watch("quantity");
+      const valuePerUnit = selectedProductReingress.price || 0;
+      const totalValue = quantity * valuePerUnit;
+      reingress.setValue("economicValue", totalValue);
+    }
+  }, [selectedProductReingress, reingress.watch("quantity")]);
+
+  // Update economic value when product or quantity changes for loss
+  useEffect(() => {
+    if (selectedProductLoss && loss.watch("quantity")) {
+      const quantity = loss.watch("quantity");
+      const valuePerUnit = selectedProductLoss.price || 0;
+      const totalValue = quantity * valuePerUnit;
+      loss.setValue("economicValue", totalValue);
+    }
+  }, [selectedProductLoss, loss.watch("quantity")]);
+
+  const handleProductSelectReingress = (product: any) => {
+    setSelectedProductReingress(product);
+    reingress.setValue("product", product.name);
+    reingress.setValue("productId", product.id);
+    
+    // Recalculate economic value
+    const quantity = reingress.watch("quantity");
+    reingress.setValue("economicValue", quantity * product.price);
+  };
+
+  const handleProductSelectLoss = (product: any) => {
+    setSelectedProductLoss(product);
+    loss.setValue("product", product.name);
+    loss.setValue("productId", product.id);
+    
+    // Recalculate economic value
+    const quantity = loss.watch("quantity");
+    loss.setValue("economicValue", quantity * product.price);
+  };
+
+  const handleBarsSelection = (bars: string[]) => {
+    setSelectedBars(bars);
+    reingress.setValue("destinationBars", bars);
+  };
 
   const handleSubmitReingress = (data: StockReingress) => {
     console.log("Reingress data:", data);
@@ -79,6 +137,8 @@ export function StockAdjustment({
     toast.success(`${data.quantity} unidades de ${data.product} reingresadas al stock`);
     onOpenChange(false);
     reingress.reset();
+    setSelectedProductReingress(null);
+    setSelectedBars([]);
   };
 
   const handleSubmitLoss = (data: StockLoss) => {
@@ -87,6 +147,7 @@ export function StockAdjustment({
     toast.success(`${data.quantity} unidades de ${data.product} registradas como pérdida`);
     onOpenChange(false);
     loss.reset();
+    setSelectedProductLoss(null);
   };
 
   return (
@@ -122,7 +183,11 @@ export function StockAdjustment({
                     <FormItem>
                       <FormLabel>Producto</FormLabel>
                       <FormControl>
-                        <Input placeholder="Nombre del producto" {...field} />
+                        <ProductSearchField 
+                          onSelect={handleProductSelectReingress}
+                          selectedProduct={field.value}
+                          placeholder="Buscar producto..."
+                        />
                       </FormControl>
                     </FormItem>
                   )}
@@ -135,7 +200,9 @@ export function StockAdjustment({
                     <FormItem>
                       <FormLabel>Cantidad</FormLabel>
                       <FormControl>
-                        <Input type="number" min={1} {...field} />
+                        <Input type="number" min={1} {...field} onChange={(e) => {
+                          field.onChange(parseInt(e.target.value) || 1);
+                        }} />
                       </FormControl>
                     </FormItem>
                   )}
@@ -211,7 +278,9 @@ export function StockAdjustment({
                     <FormItem>
                       <FormLabel>Costo asociado ($)</FormLabel>
                       <FormControl>
-                        <Input type="number" min={0} step="0.01" {...field} />
+                        <Input type="number" min={0} step="0.01" {...field} onChange={(e) => {
+                          field.onChange(parseFloat(e.target.value) || 0);
+                        }} />
                       </FormControl>
                       <FormDescription>
                         Costo adicional por el reingreso (si aplica)
@@ -219,6 +288,36 @@ export function StockAdjustment({
                     </FormItem>
                   )}
                 />
+
+                <FormField
+                  control={reingress.control}
+                  name="economicValue"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>Valor económico ($)</FormLabel>
+                      <FormControl>
+                        <Input type="number" min={0} step="0.01" {...field} onChange={(e) => {
+                          field.onChange(parseFloat(e.target.value) || 0);
+                        }} />
+                      </FormControl>
+                      <FormDescription>
+                        Valor económico total del reingreso
+                      </FormDescription>
+                    </FormItem>
+                  )}
+                />
+                
+                <FormItem>
+                  <FormLabel>Barras de destino</FormLabel>
+                  <MultiSelectBarsField 
+                    onSelectionChange={handleBarsSelection}
+                    initialSelection={selectedBars}
+                    placeholder="Seleccionar barras de destino"
+                  />
+                  <FormDescription>
+                    Selecciona las barras donde se enviará este producto
+                  </FormDescription>
+                </FormItem>
 
                 <FormField
                   control={reingress.control}
@@ -251,7 +350,11 @@ export function StockAdjustment({
                     <FormItem>
                       <FormLabel>Producto</FormLabel>
                       <FormControl>
-                        <Input placeholder="Nombre del producto" {...field} />
+                        <ProductSearchField 
+                          onSelect={handleProductSelectLoss}
+                          selectedProduct={field.value}
+                          placeholder="Buscar producto..."
+                        />
                       </FormControl>
                     </FormItem>
                   )}
@@ -264,7 +367,9 @@ export function StockAdjustment({
                     <FormItem>
                       <FormLabel>Cantidad</FormLabel>
                       <FormControl>
-                        <Input type="number" min={1} {...field} />
+                        <Input type="number" min={1} {...field} onChange={(e) => {
+                          field.onChange(parseInt(e.target.value) || 1);
+                        }} />
                       </FormControl>
                     </FormItem>
                   )}
@@ -329,6 +434,24 @@ export function StockAdjustment({
                           onCheckedChange={field.onChange}
                         />
                       </FormControl>
+                    </FormItem>
+                  )}
+                />
+
+                <FormField
+                  control={loss.control}
+                  name="economicValue"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>Valor económico ($)</FormLabel>
+                      <FormControl>
+                        <Input type="number" min={0} step="0.01" {...field} onChange={(e) => {
+                          field.onChange(parseFloat(e.target.value) || 0);
+                        }} />
+                      </FormControl>
+                      <FormDescription>
+                        Valor económico total de la pérdida
+                      </FormDescription>
                     </FormItem>
                   )}
                 />
