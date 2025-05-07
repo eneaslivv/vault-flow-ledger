@@ -1,4 +1,3 @@
-
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { PageHeader } from "@/components/PageHeader";
@@ -98,16 +97,7 @@ const Stock = () => {
 
   // Combine with unredeemed items if the filter is active
   const displayItems = showUnredeemed 
-    ? unredeemedStockData.map(item => ({
-        id: item.id + 1000, // Ensure unique IDs
-        product: item.product,
-        category: "No Retirado",
-        quantity: item.quantity,
-        bar: item.bar,
-        status: "No Retirado",
-        date: item.date,
-        user: item.user
-      }))
+    ? unredeemedStockData
     : filteredStock;
 
   const handleAssignStock = (productId: number) => {
