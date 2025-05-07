@@ -16,12 +16,16 @@ import {
   Tag,
   BoxesIcon,
   Users,
+  Plus
 } from "lucide-react";
 import { StatsCard } from "@/components/StatsCard";
 import { useIsMobile } from "@/hooks/use-mobile";
 import { IncomePanel } from "@/components/bars/IncomePanel";
 import { StockTransfers } from "@/components/bars/StockTransfers";
 import { BarVisualization } from "@/components/bars/BarVisualization";
+import { QRGenerator } from "@/components/bars/QRGenerator";
+import { BarCreator } from "@/components/bars/BarCreator";
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 
 // Mock data for QR performance
 const qrPerformanceData = [
@@ -45,6 +49,9 @@ const Bars = () => {
   const isMobile = useIsMobile();
   const colSpan = isMobile ? "col-span-12" : "col-span-3";
   const [selectedBar, setSelectedBar] = useState("all");
+  const [activeTab, setActiveTab] = useState("management");
+  const [qrGeneratorOpen, setQrGeneratorOpen] = useState(false);
+  const [barCreatorOpen, setBarCreatorOpen] = useState(false);
   
   return (
     <>
@@ -52,9 +59,13 @@ const Bars = () => {
         title="Gestión de Barras & QRs" 
         description="Control de barras, QRs, ingresos y transferencias"
       >
-        <Button>
+        <Button className="mr-2" onClick={() => setQrGeneratorOpen(true)}>
           <QrCode className="mr-2 h-4 w-4" />
           Generar Nuevo QR
+        </Button>
+        <Button onClick={() => setBarCreatorOpen(true)}>
+          <Plus className="mr-2 h-4 w-4" />
+          Nueva Barra
         </Button>
       </PageHeader>
 
@@ -98,42 +109,139 @@ const Bars = () => {
           <CardDescription>Ingresos, stock, transferencias y personal</CardDescription>
         </CardHeader>
         <CardContent>
-          <div className="flex flex-col md:flex-row gap-4 mb-4">
-            <Select value={selectedBar} onValueChange={setSelectedBar}>
-              <SelectTrigger className="w-full md:w-[200px]">
-                <SelectValue placeholder="Seleccionar bar" />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="all">Todas las barras</SelectItem>
-                <SelectItem value="barCentral">Barra Central</SelectItem>
-                <SelectItem value="barNorte">Barra Norte</SelectItem>
-                <SelectItem value="barSur">Barra Sur</SelectItem>
-                <SelectItem value="elAlamo">El Alamo</SelectItem>
-              </SelectContent>
-            </Select>
-            <div className="relative flex-1">
-              <Input placeholder="Buscar por QR, staff o producto..." />
-            </div>
-          </div>
-        
-          <Tabs defaultValue="income">
-            <TabsList className="grid w-full grid-cols-3">
-              <TabsTrigger value="income">Ingresos</TabsTrigger>
-              <TabsTrigger value="transfers">Transferencias</TabsTrigger>
-              <TabsTrigger value="details">Detalle de Barras</TabsTrigger>
+          <Tabs value={activeTab} onValueChange={setActiveTab}>
+            <TabsList className="grid w-full grid-cols-4">
+              <TabsTrigger value="management">Gestión</TabsTrigger>
+              <TabsTrigger value="qrs">QRs</TabsTrigger>
+              <TabsTrigger value="bars">Barras</TabsTrigger>
+              <TabsTrigger value="details">Detalle</TabsTrigger>
             </TabsList>
             
-            {/* Ingresos Panel */}
-            <TabsContent value="income">
-              <IncomePanel selectedBar={selectedBar} />
+            {/* Gestión Tab */}
+            <TabsContent value="management">
+              <div className="flex flex-col md:flex-row gap-4 mb-4">
+                <Select value={selectedBar} onValueChange={setSelectedBar}>
+                  <SelectTrigger className="w-full md:w-[200px]">
+                    <SelectValue placeholder="Seleccionar bar" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="all">Todas las barras</SelectItem>
+                    <SelectItem value="barCentral">Barra Central</SelectItem>
+                    <SelectItem value="barNorte">Barra Norte</SelectItem>
+                    <SelectItem value="barSur">Barra Sur</SelectItem>
+                    <SelectItem value="elAlamo">El Alamo</SelectItem>
+                  </SelectContent>
+                </Select>
+                <div className="relative flex-1">
+                  <Input placeholder="Buscar por QR, staff o producto..." />
+                </div>
+              </div>
+            
+              <Tabs defaultValue="income">
+                <TabsList className="grid w-full grid-cols-3">
+                  <TabsTrigger value="income">Ingresos</TabsTrigger>
+                  <TabsTrigger value="transfers">Transferencias</TabsTrigger>
+                  <TabsTrigger value="details">Detalle de Barras</TabsTrigger>
+                </TabsList>
+                
+                {/* Ingresos Panel */}
+                <TabsContent value="income">
+                  <IncomePanel selectedBar={selectedBar} />
+                </TabsContent>
+                
+                {/* Transferencias Panel */}
+                <TabsContent value="transfers">
+                  <StockTransfers selectedBar={selectedBar} />
+                </TabsContent>
+                
+                {/* Detalle de Barras */}
+                <TabsContent value="details">
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
+                    <Card>
+                      <CardHeader className="pb-2">
+                        <CardTitle className="text-lg">Performance de QRs</CardTitle>
+                        <CardDescription>Escaneos y conversión por código QR</CardDescription>
+                      </CardHeader>
+                      <CardContent>
+                        <Table>
+                          <TableHeader>
+                            <TableRow>
+                              <TableHead>QR</TableHead>
+                              <TableHead>Ubicación</TableHead>
+                              <TableHead>Escaneos</TableHead>
+                              <TableHead>Pedidos</TableHead>
+                              <TableHead>Ingresos</TableHead>
+                            </TableRow>
+                          </TableHeader>
+                          <TableBody>
+                            {qrPerformanceData
+                              .filter(item => selectedBar === "all" || item.location.toLowerCase().includes(selectedBar.toLowerCase()))
+                              .map(qr => (
+                                <TableRow key={qr.id}>
+                                  <TableCell className="font-medium">{qr.qrCode}</TableCell>
+                                  <TableCell>{qr.location}</TableCell>
+                                  <TableCell>{qr.scans}</TableCell>
+                                  <TableCell>{qr.orders}</TableCell>
+                                  <TableCell>{qr.revenue}</TableCell>
+                                </TableRow>
+                              ))}
+                          </TableBody>
+                        </Table>
+                      </CardContent>
+                    </Card>
+                    
+                    <Card>
+                      <CardHeader className="pb-2">
+                        <CardTitle className="text-lg">Personal por Barra</CardTitle>
+                        <CardDescription>Staff asignado a cada barra</CardDescription>
+                      </CardHeader>
+                      <CardContent>
+                        <Table>
+                          <TableHeader>
+                            <TableRow>
+                              <TableHead>Nombre</TableHead>
+                              <TableHead>Rol</TableHead>
+                              <TableHead>Barra</TableHead>
+                              <TableHead>Turno</TableHead>
+                              <TableHead>Performance</TableHead>
+                            </TableRow>
+                          </TableHeader>
+                          <TableBody>
+                            {barStaffData
+                              .filter(item => selectedBar === "all" || item.bar.toLowerCase().includes(selectedBar.replace(/([A-Z])/g, ' $1').trim().toLowerCase()))
+                              .map(staff => (
+                                <TableRow key={staff.id}>
+                                  <TableCell className="font-medium">{staff.name}</TableCell>
+                                  <TableCell>{staff.role}</TableCell>
+                                  <TableCell>{staff.bar}</TableCell>
+                                  <TableCell>{staff.shift}</TableCell>
+                                  <TableCell>
+                                    <Badge className="bg-green-100 text-green-800 hover:bg-green-100">
+                                      {staff.performance}
+                                    </Badge>
+                                  </TableCell>
+                                </TableRow>
+                              ))}
+                          </TableBody>
+                        </Table>
+                      </CardContent>
+                    </Card>
+                  </div>
+                </TabsContent>
+              </Tabs>
             </TabsContent>
             
-            {/* Transferencias Panel */}
-            <TabsContent value="transfers">
-              <StockTransfers selectedBar={selectedBar} />
+            {/* QRs Tab */}
+            <TabsContent value="qrs">
+              <QRGenerator />
             </TabsContent>
             
-            {/* Detalle de Barras */}
+            {/* Barras Tab */}
+            <TabsContent value="bars">
+              <BarCreator />
+            </TabsContent>
+            
+            {/* Detalle Tab */}
             <TabsContent value="details">
               <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
                 <Card>
@@ -210,6 +318,25 @@ const Bars = () => {
           </Tabs>
         </CardContent>
       </Card>
+
+      {/* Modals */}
+      <Dialog open={qrGeneratorOpen} onOpenChange={setQrGeneratorOpen}>
+        <DialogContent className="max-w-4xl">
+          <DialogHeader>
+            <DialogTitle>Generador de Código QR</DialogTitle>
+          </DialogHeader>
+          <QRGenerator />
+        </DialogContent>
+      </Dialog>
+
+      <Dialog open={barCreatorOpen} onOpenChange={setBarCreatorOpen}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Crear Nueva Barra</DialogTitle>
+          </DialogHeader>
+          <BarCreator />
+        </DialogContent>
+      </Dialog>
     </>
   );
 };
