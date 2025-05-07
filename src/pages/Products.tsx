@@ -140,36 +140,31 @@ const categoriesData = [{
 }];
 
 // Mock data for courtesies
-const courtesiesData = [
-  { 
-    id: 1, 
-    product: "Vodka Red Bull", 
-    category: "Alcoholico", 
-    maxPerNight: 5, 
-    givenByRank: ["VIP"], 
-    givenToday: 3, 
-    bar: "El Alamo" 
-  },
-  { 
-    id: 2, 
-    product: "Champagne Moët & Chandon", 
-    category: "Alcoholico", 
-    maxPerNight: 2, 
-    givenByRank: ["VIP"], 
-    givenToday: 1, 
-    bar: "Bar Central" 
-  },
-  { 
-    id: 3, 
-    product: "Gin Tonic Beefeater", 
-    category: "Alcoholico", 
-    maxPerNight: 8, 
-    givenByRank: ["VIP", "Premium"], 
-    givenToday: 5, 
-    bar: "Bar Norte" 
-  },
-];
-
+const courtesiesData = [{
+  id: 1,
+  product: "Vodka Red Bull",
+  category: "Alcoholico",
+  maxPerNight: 5,
+  givenByRank: ["VIP"],
+  givenToday: 3,
+  bar: "El Alamo"
+}, {
+  id: 2,
+  product: "Champagne Moët & Chandon",
+  category: "Alcoholico",
+  maxPerNight: 2,
+  givenByRank: ["VIP"],
+  givenToday: 1,
+  bar: "Bar Central"
+}, {
+  id: 3,
+  product: "Gin Tonic Beefeater",
+  category: "Alcoholico",
+  maxPerNight: 8,
+  givenByRank: ["VIP", "Premium"],
+  givenToday: 5,
+  bar: "Bar Norte"
+}];
 const CourtesySettingsDialog = ({
   product,
   onSave
@@ -268,7 +263,6 @@ const PRTokenSettingsDialog = ({
       </div>
     </div>;
 };
-
 const Products = () => {
   const navigate = useNavigate();
   const [selectedBarFilter, setSelectedBarFilter] = useState("all");
@@ -284,12 +278,10 @@ const Products = () => {
   const [selectedProducts, setSelectedProducts] = useState<number[]>([]);
   const [productDetailOpen, setProductDetailOpen] = useState(false);
   const [currentProduct, setCurrentProduct] = useState(null);
-  
   const handleAdjustStock = (productName: string = "") => {
     setProductToAdjust(productName);
     setStockAdjustmentOpen(true);
   };
-  
   const toggleProductSelection = (productId: number) => {
     setSelectedProducts(prev => {
       if (prev.includes(productId)) {
@@ -299,7 +291,6 @@ const Products = () => {
       }
     });
   };
-  
   const toggleAllProducts = (checked: boolean) => {
     if (checked) {
       setSelectedProducts(filteredProducts.map(product => product.id));
@@ -307,17 +298,14 @@ const Products = () => {
       setSelectedProducts([]);
     }
   };
-  
   const handleStockReingress = (data: any) => {
     console.log("Reingreso procesado:", data);
     // Aquí iría la lógica para actualizar el stock
   };
-  
   const handleStockLoss = (data: any) => {
     console.log("Pérdida registrada:", data);
     // Aquí iría la lógica para actualizar el stock
   };
-  
   const toggleCourtesy = (productId: number) => {
     setProducts(products.map(product => {
       if (product.id === productId) {
@@ -337,12 +325,10 @@ const Products = () => {
       return product;
     }));
   };
-  
   const saveCourtesySettings = updatedProduct => {
     setProducts(products.map(product => product.id === updatedProduct.id ? updatedProduct : product));
     setCourtesySettingsOpen(false);
   };
-  
   const toggleTokenProduct = (productId: number) => {
     setProducts(products.map(product => {
       if (product.id === productId) {
@@ -363,24 +349,20 @@ const Products = () => {
       return product;
     }));
   };
-  
   const saveTokenSettings = updatedProduct => {
     setProducts(products.map(product => product.id === updatedProduct.id ? updatedProduct : product));
     setTokenSettingsOpen(false);
   };
-  
   const deleteProduct = (productId: number) => {
     // Here you would typically call an API to delete the product
     setProducts(products.filter(product => product.id !== productId));
   };
-  
   const deleteSelectedProducts = () => {
     // Here you would typically call an API to delete the selected products
     setProducts(products.filter(product => !selectedProducts.includes(product.id)));
     setSelectedProducts([]);
   };
-
-  const viewProductDetail = (product) => {
+  const viewProductDetail = product => {
     setCurrentProduct(product);
     setProductDetailOpen(true);
   };
@@ -393,20 +375,15 @@ const Products = () => {
   if (tokenProductFilterOn) {
     filteredProducts = filteredProducts.filter(product => product.isTokenProduct);
   }
-  
-  const areAllProductsSelected = filteredProducts.length > 0 && 
-    filteredProducts.every(product => selectedProducts.includes(product.id));
-    
+  const areAllProductsSelected = filteredProducts.length > 0 && filteredProducts.every(product => selectedProducts.includes(product.id));
   const hasSelectedProducts = selectedProducts.length > 0;
-  
-  return (
-    <>
+  return <>
       <PageHeader title="Carta & Productos" description="Gestión de productos, precios y disponibilidad">
-        <Button className="mr-2" onClick={() => handleAdjustStock()}>
+        <Button onClick={() => handleAdjustStock()} className="mr-2 bg-stone-900 hover:bg-stone-800">
           <PackagePlus className="mr-2 h-4 w-4" />
           Ajustar Stock
         </Button>
-        <Button>
+        <Button className="bg-stone-900 hover:bg-stone-800">
           <Plus className="mr-2 h-4 w-4" />
           Nuevo Producto
         </Button>
@@ -481,52 +458,39 @@ const Products = () => {
                   </div>
                 </div>
                 
-                {hasSelectedProducts && (
-                  <div className="flex items-center space-x-2">
+                {hasSelectedProducts && <div className="flex items-center space-x-2">
                     <Badge variant="outline">{selectedProducts.length} seleccionados</Badge>
                     <Button variant="destructive" size="sm" onClick={deleteSelectedProducts}>
                       <Trash className="h-4 w-4 mr-1" /> Eliminar
                     </Button>
-                  </div>
-                )}
+                  </div>}
               </div>
               
               <Table>
                 <TableHeader>
                   <TableRow>
                     <TableHead className="w-[48px]">
-                      <Checkbox 
-                        checked={areAllProductsSelected} 
-                        onCheckedChange={toggleAllProducts}
-                      />
+                      <Checkbox checked={areAllProductsSelected} onCheckedChange={toggleAllProducts} className="bg-slate-50 text-stone\n-950" />
                     </TableHead>
                     <TableHead>ID</TableHead>
                     <TableHead>Nombre</TableHead>
                     <TableHead>Categoría</TableHead>
                     <TableHead>Precio</TableHead>
                     <TableHead>Stock</TableHead>
-                    <TableHead>Barras</TableHead>
+                    
                     <TableHead>Cortesía</TableHead>
                     <TableHead>PR Tokens</TableHead>
                     <TableHead className="text-right">Acciones</TableHead>
                   </TableRow>
                 </TableHeader>
                 <TableBody>
-                  {filteredProducts.map(product => (
-                    <TableRow key={product.id}>
+                  {filteredProducts.map(product => <TableRow key={product.id}>
                       <TableCell>
-                        <Checkbox 
-                          checked={selectedProducts.includes(product.id)} 
-                          onCheckedChange={() => toggleProductSelection(product.id)}
-                        />
+                        <Checkbox checked={selectedProducts.includes(product.id)} onCheckedChange={() => toggleProductSelection(product.id)} />
                       </TableCell>
                       <TableCell>#{product.id}</TableCell>
                       <TableCell>
-                        <Button 
-                          variant="link" 
-                          className="p-0 h-auto font-medium text-blue-600 hover:text-blue-800"
-                          onClick={() => viewProductDetail(product)}
-                        >
+                        <Button variant="link" onClick={() => viewProductDetail(product)} className="p-0 h-auto font-medium text-orange-900">
                           {product.name}
                         </Button>
                       </TableCell>
@@ -535,46 +499,32 @@ const Products = () => {
                       <TableCell>
                         <div className="flex items-center gap-2">
                           {product.stockAvailable}
-                          {product.limitedStock && (
-                            <Badge variant="outline" className="text-amber-600 border-amber-600">
+                          {product.limitedStock && <Badge variant="outline" className="text-amber-600 border-amber-600">
                               Limitado
-                            </Badge>
-                          )}
+                            </Badge>}
                         </div>
                       </TableCell>
-                      <TableCell>
-                        <div className="flex flex-wrap gap-1">
-                          {product.bars.map(bar => (
-                            <Badge key={bar} variant="secondary" className="text-xs">
-                              {bar}
-                            </Badge>
-                          ))}
-                        </div>
-                      </TableCell>
+                      
                       <TableCell>
                         <div className="flex items-center space-x-2">
                           <Switch checked={product.isCourtesy} onCheckedChange={() => toggleCourtesy(product.id)} />
-                          {product.isCourtesy && (
-                            <Button variant="ghost" size="icon" onClick={() => {
-                              setSelectedProduct(product);
-                              setCourtesySettingsOpen(true);
-                            }}>
+                          {product.isCourtesy && <Button variant="ghost" size="icon" onClick={() => {
+                        setSelectedProduct(product);
+                        setCourtesySettingsOpen(true);
+                      }}>
                               <Gift className="h-4 w-4" />
-                            </Button>
-                          )}
+                            </Button>}
                         </div>
                       </TableCell>
                       <TableCell>
                         <div className="flex items-center space-x-2">
                           <Switch checked={product.isTokenProduct} onCheckedChange={() => toggleTokenProduct(product.id)} />
-                          {product.isTokenProduct && (
-                            <Button variant="ghost" size="icon" onClick={() => {
-                              setSelectedProduct(product);
-                              setTokenSettingsOpen(true);
-                            }}>
+                          {product.isTokenProduct && <Button variant="ghost" size="icon" onClick={() => {
+                        setSelectedProduct(product);
+                        setTokenSettingsOpen(true);
+                      }}>
                               <Coins className="h-4 w-4" />
-                            </Button>
-                          )}
+                            </Button>}
                         </div>
                       </TableCell>
                       <TableCell className="text-right">
@@ -598,18 +548,14 @@ const Products = () => {
                               Editar Producto
                             </DropdownMenuItem>
                             <DropdownMenuSeparator />
-                            <DropdownMenuItem 
-                              className="text-destructive" 
-                              onClick={() => deleteProduct(product.id)}
-                            >
+                            <DropdownMenuItem className="text-destructive" onClick={() => deleteProduct(product.id)}>
                               <Trash className="h-4 w-4 mr-2" />
                               Eliminar
                             </DropdownMenuItem>
                           </DropdownMenuContent>
                         </DropdownMenu>
                       </TableCell>
-                    </TableRow>
-                  ))}
+                    </TableRow>)}
                 </TableBody>
               </Table>
             </TabsContent>
@@ -618,14 +564,12 @@ const Products = () => {
             <TabsContent value="categories">
               <div className="flex justify-between mb-4">
                 <div>
-                  {hasSelectedProducts && (
-                    <div className="flex items-center space-x-2">
+                  {hasSelectedProducts && <div className="flex items-center space-x-2">
                       <Badge variant="outline">{selectedProducts.length} seleccionados</Badge>
                       <Button variant="destructive" size="sm" onClick={deleteSelectedProducts}>
                         <Trash className="h-4 w-4 mr-1" /> Eliminar
                       </Button>
-                    </div>
-                  )}
+                    </div>}
                 </div>
                 <Button size="sm">
                   <Plus className="mr-2 h-4 w-4" />
@@ -637,10 +581,7 @@ const Products = () => {
                 <TableHeader>
                   <TableRow>
                     <TableHead className="w-[48px]">
-                      <Checkbox 
-                        checked={areAllProductsSelected}
-                        onCheckedChange={toggleAllProducts}
-                      />
+                      <Checkbox checked={areAllProductsSelected} onCheckedChange={toggleAllProducts} />
                     </TableHead>
                     <TableHead>ID</TableHead>
                     <TableHead>Nombre</TableHead>
@@ -650,13 +591,9 @@ const Products = () => {
                   </TableRow>
                 </TableHeader>
                 <TableBody>
-                  {categoriesData.map(category => (
-                    <TableRow key={category.id}>
+                  {categoriesData.map(category => <TableRow key={category.id}>
                       <TableCell>
-                        <Checkbox 
-                          checked={selectedProducts.includes(category.id)} 
-                          onCheckedChange={() => toggleProductSelection(category.id)}
-                        />
+                        <Checkbox checked={selectedProducts.includes(category.id)} onCheckedChange={() => toggleProductSelection(category.id)} />
                       </TableCell>
                       <TableCell>#{category.id}</TableCell>
                       <TableCell>{category.name}</TableCell>
@@ -686,8 +623,7 @@ const Products = () => {
                           </DropdownMenuContent>
                         </DropdownMenu>
                       </TableCell>
-                    </TableRow>
-                  ))}
+                    </TableRow>)}
                 </TableBody>
               </Table>
             </TabsContent>
@@ -710,8 +646,7 @@ const Products = () => {
                   </TableRow>
                 </TableHeader>
                 <TableBody>
-                  {courtesiesData.map(item => (
-                    <TableRow key={item.id}>
+                  {courtesiesData.map(item => <TableRow key={item.id}>
                       <TableCell>
                         <Checkbox />
                       </TableCell>
@@ -720,11 +655,9 @@ const Products = () => {
                       <TableCell>{item.maxPerNight}</TableCell>
                       <TableCell>
                         <div className="flex flex-wrap gap-1">
-                          {item.givenByRank.map(rank => (
-                            <Badge key={rank} variant="secondary" className="text-xs">
+                          {item.givenByRank.map(rank => <Badge key={rank} variant="secondary" className="text-xs">
                               {rank}
-                            </Badge>
-                          ))}
+                            </Badge>)}
                         </div>
                       </TableCell>
                       <TableCell>
@@ -739,8 +672,7 @@ const Products = () => {
                           Editar
                         </Button>
                       </TableCell>
-                    </TableRow>
-                  ))}
+                    </TableRow>)}
                 </TableBody>
               </Table>
             </TabsContent>
@@ -850,13 +782,7 @@ const Products = () => {
       </Dialog>
 
       {/* Product Detail Modal */}
-      <ProductDetailModal 
-        open={productDetailOpen}
-        onOpenChange={setProductDetailOpen}
-        product={currentProduct}
-      />
-    </>
-  );
+      <ProductDetailModal open={productDetailOpen} onOpenChange={setProductDetailOpen} product={currentProduct} />
+    </>;
 };
-
 export default Products;
