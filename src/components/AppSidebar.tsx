@@ -63,7 +63,7 @@ export function AppSidebar() {
                     <NavLink to={item.path} className={({
                   isActive
                 }) => cn("text-gray-600 hover:bg-blue-50 hover:text-blue-700", isActive && "bg-blue-50 text-blue-700 font-medium")}>
-                      <item.icon className="h-5 w-5 bg-stone-100" />
+                      <item.icon className="h-3 w-3 bg-stone-100" />
                       <span className="text-stone-700">{item.title}</span>
                     </NavLink>
                   </SidebarMenuButton>
