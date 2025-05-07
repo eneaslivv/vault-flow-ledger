@@ -28,8 +28,10 @@ import {
   PackagePlus,
   PackageX,
   Plus,
-  Trash
+  Trash,
+  Filter
 } from "lucide-react";
+import { ProductDetailModal } from "@/components/products/ProductDetailModal";
 
 // Mock data for stock
 const stockData = [
@@ -63,6 +65,9 @@ const Stock = () => {
   const [multipleTransferOpen, setMultipleTransferOpen] = useState(false);
   const [selectedStockItems, setSelectedStockItems] = useState<number[]>([]);
   const [selectedUnredeemedItems, setSelectedUnredeemedItems] = useState<number[]>([]);
+  const [showUnredeemed, setShowUnredeemed] = useState(false);
+  const [productDetailOpen, setProductDetailOpen] = useState(false);
+  const [currentProduct, setCurrentProduct] = useState(null);
   
   const assignForm = useForm({
     defaultValues: {
@@ -77,19 +82,33 @@ const Stock = () => {
       product: "",
       quantity: 0,
       fromBar: "",
-      toBar: "",
+      selectedBars: [],
       transferType: "Permanente",
       notes: ""
     }
   });
   
-  // Filter stock data based on selection
+  // Filter stock data based on selection and unredeemed filter
   const filteredStock = stockData.filter(item => {
     const matchesBar = selectedBar === "Todos" || item.bar === selectedBar;
     const matchesSearch = item.product.toLowerCase().includes(searchTerm.toLowerCase()) || 
                           item.category.toLowerCase().includes(searchTerm.toLowerCase());
-    return matchesBar && matchesSearch;
+    return matchesBar && matchesSearch && (!showUnredeemed);
   });
+
+  // Combine with unredeemed items if the filter is active
+  const displayItems = showUnredeemed 
+    ? unredeemedStockData.map(item => ({
+        id: item.id + 1000, // Ensure unique IDs
+        product: item.product,
+        category: "No Retirado",
+        quantity: item.quantity,
+        bar: item.bar,
+        status: "No Retirado",
+        date: item.date,
+        user: item.user
+      }))
+    : filteredStock;
 
   const handleAssignStock = (productId: number) => {
     setSelectedProduct(productId);
@@ -121,30 +140,21 @@ const Stock = () => {
   
   const toggleAllStockItems = (checked: boolean) => {
     if (checked) {
-      setSelectedStockItems(filteredStock.map(item => item.id));
+      setSelectedStockItems(displayItems.map(item => item.id));
     } else {
       setSelectedStockItems([]);
     }
   };
   
-  const toggleUnredeemedItemSelection = (itemId: number) => {
-    setSelectedUnredeemedItems(prev => {
-      if (prev.includes(itemId)) {
-        return prev.filter(id => id !== itemId);
-      } else {
-        return [...prev, itemId];
-      }
-    });
-  };
-  
-  const toggleAllUnredeemedItems = (checked: boolean) => {
-    if (checked) {
-      setSelectedUnredeemedItems(unredeemedStockData.map(item => item.id));
+  const toggleBarSelection = (barName: string) => {
+    const currentBars = transferForm.getValues('selectedBars') || [];
+    if (currentBars.includes(barName)) {
+      transferForm.setValue('selectedBars', currentBars.filter(b => b !== barName));
     } else {
-      setSelectedUnredeemedItems([]);
+      transferForm.setValue('selectedBars', [...currentBars, barName]);
     }
   };
-
+  
   const handleMultipleTransferSuccess = (data: any) => {
     console.log("Transferencia múltiple completada:", data);
     // Aquí iría la lógica para actualizar el stock
@@ -163,7 +173,16 @@ const Stock = () => {
   const onSubmitTransfer = (data: any) => {
     console.log("Transferencia creada:", data);
     setTransferDialogOpen(false);
-    toast.success(`${data.quantity} unidades de ${data.product} transferidas de ${data.fromBar} a ${data.toBar}`);
+    
+    // Get selected bars
+    const selectedBars = data.selectedBars || [];
+    if (selectedBars.length === 0) {
+      toast.error("Debes seleccionar al menos una barra de destino");
+      return;
+    }
+    
+    // Show success message with all selected bars
+    toast.success(`${data.quantity} unidades de ${data.product} transferidas de ${data.fromBar} a ${selectedBars.join(', ')}`);
     // Aquí iría la lógica para crear la transferencia
   };
 
@@ -179,29 +198,34 @@ const Stock = () => {
     // Aquí iría la lógica para actualizar el stock
   };
 
-  const goToBarDetail = (barName: string) => {
-    const bar = bars.findIndex(b => b === barName);
-    if (bar > 0) { // Skipping "Todos"
-      navigate(`/bars/${bar}`);
-    }
-  };
-  
-  const viewProductDetail = (productId: number) => {
-    navigate(`/products/${productId}`);
+  const viewProductDetail = (product) => {
+    // Construct a product object from the item data
+    const productData = {
+      id: product.id,
+      name: product.product,
+      category: product.category,
+      price: "$750", // Mock price
+      stockAvailable: product.quantity,
+      limitedStock: false,
+      bars: [product.bar],
+      isCourtesy: false,
+      courtesyRules: null,
+      isTokenProduct: false,
+      tokenRanks: []
+    };
+    
+    setCurrentProduct(productData);
+    setProductDetailOpen(true);
   };
 
   const selectedProductData = selectedProduct 
     ? stockData.find(product => product.id === selectedProduct) 
     : null;
     
-  const areAllStockItemsSelected = filteredStock.length > 0 && 
-    filteredStock.every(item => selectedStockItems.includes(item.id));
-    
-  const areAllUnredeemedItemsSelected = unredeemedStockData.length > 0 && 
-    unredeemedStockData.every(item => selectedUnredeemedItems.includes(item.id));
+  const areAllStockItemsSelected = displayItems.length > 0 && 
+    displayItems.every(item => selectedStockItems.includes(item.id));
     
   const hasSelectedStockItems = selectedStockItems.length > 0;
-  const hasSelectedUnredeemedItems = selectedUnredeemedItems.length > 0;
   
   return (
     <>
@@ -292,31 +316,46 @@ const Stock = () => {
             </Select>
           </div>
           
+          <div className="flex justify-between items-center mb-4">
+            <div className="flex items-center space-x-4">
+              <div className="flex items-center space-x-2">
+                <Checkbox 
+                  id="unredeemedFilter"
+                  checked={showUnredeemed}
+                  onCheckedChange={() => setShowUnredeemed(!showUnredeemed)}
+                />
+                <Label htmlFor="unredeemedFilter">Mostrar solo productos no retirados</Label>
+              </div>
+              
+              <Button variant="outline" size="sm" className="flex items-center gap-2">
+                <Filter className="h-4 w-4" />
+                Más filtros
+              </Button>
+            </div>
+            
+            {hasSelectedStockItems && (
+              <div className="flex items-center space-x-2">
+                <Badge variant="outline">{selectedStockItems.length} seleccionados</Badge>
+                <Button variant="outline" size="sm" onClick={handleMultipleTransfer}>
+                  <ArrowRightLeft className="h-4 w-4 mr-1" /> Transferir
+                </Button>
+                <Button variant="destructive" size="sm">
+                  <Trash className="h-4 w-4 mr-1" /> Eliminar
+                </Button>
+              </div>
+            )}
+          </div>
+          
           <Tabs value={activeTab} onValueChange={setActiveTab}>
-            <TabsList className="grid w-full grid-cols-5">
+            <TabsList className="grid w-full grid-cols-4">
               <TabsTrigger value="stock">En Stock y Reasignaciones</TabsTrigger>
               <TabsTrigger value="custom">Tragos Personalizados</TabsTrigger>
               <TabsTrigger value="transfers">Transferencias</TabsTrigger>
-              <TabsTrigger value="unredeemed">No Retirados</TabsTrigger>
               <TabsTrigger value="adjustments">Ajustes</TabsTrigger>
             </TabsList>
             
             {/* En Stock y Reasignaciones */}
-            <TabsContent value="stock">
-              <div className="flex justify-between items-center mb-4">
-                {hasSelectedStockItems && (
-                  <div className="flex items-center space-x-2">
-                    <Badge variant="outline">{selectedStockItems.length} seleccionados</Badge>
-                    <Button variant="outline" size="sm" onClick={handleMultipleTransfer}>
-                      <ArrowRightLeft className="h-4 w-4 mr-1" /> Transferir
-                    </Button>
-                    <Button variant="destructive" size="sm">
-                      <Trash className="h-4 w-4 mr-1" /> Eliminar
-                    </Button>
-                  </div>
-                )}
-              </div>
-              
+            <TabsContent value="stock">              
               <Table>
                 <TableHeader>
                   <TableRow>
@@ -331,11 +370,13 @@ const Stock = () => {
                     <TableHead>Cantidad</TableHead>
                     <TableHead>Bar</TableHead>
                     <TableHead>Estado</TableHead>
+                    {showUnredeemed && <TableHead>Fecha</TableHead>}
+                    {showUnredeemed && <TableHead>Usuario</TableHead>}
                     <TableHead>Acciones</TableHead>
                   </TableRow>
                 </TableHeader>
                 <TableBody>
-                  {filteredStock.map(item => (
+                  {displayItems.map(item => (
                     <TableRow key={item.id}>
                       <TableCell>
                         <Checkbox 
@@ -347,7 +388,7 @@ const Stock = () => {
                         <Button 
                           variant="link" 
                           className="p-0 h-auto font-medium text-blue-600 hover:text-blue-800"
-                          onClick={() => viewProductDetail(item.id)}
+                          onClick={() => viewProductDetail(item)}
                         >
                           {item.product}
                         </Button>
@@ -364,19 +405,35 @@ const Stock = () => {
                         </Button>
                       </TableCell>
                       <TableCell>
-                        <Badge variant="outline" className="bg-green-50 text-green-700 border-green-200">
+                        <Badge variant="outline" className={
+                          item.status === "En Stock" ? "bg-green-50 text-green-700 border-green-200" : 
+                          "bg-amber-50 text-amber-700 border-amber-200"
+                        }>
                           {item.status}
                         </Badge>
                       </TableCell>
+                      {showUnredeemed && <TableCell>{item.date}</TableCell>}
+                      {showUnredeemed && <TableCell>{item.user}</TableCell>}
                       <TableCell>
                         <div className="flex gap-2">
                           <Button 
                             variant="outline" 
                             size="sm"
-                            onClick={() => handleAssignStock(item.id)}
+                            onClick={() => item.status === "En Stock" ? 
+                              handleAssignStock(item.id) : 
+                              handleAdjustStock(item.product)
+                            }
                           >
-                            <ArrowRightLeft className="mr-2 h-4 w-4" />
-                            Asignar
+                            {item.status === "En Stock" ? 
+                              <>
+                                <ArrowRightLeft className="mr-2 h-4 w-4" />
+                                Asignar
+                              </> : 
+                              <>
+                                <ShoppingCart className="mr-2 h-4 w-4" />
+                                Marcar retirado
+                              </>
+                            }
                           </Button>
                           <Button 
                             variant="ghost" 
@@ -401,79 +458,6 @@ const Stock = () => {
             {/* Transferencias */}
             <TabsContent value="transfers">
               <StockTransfers selectedBar="all" />
-            </TabsContent>
-            
-            {/* No Retirados */}
-            <TabsContent value="unredeemed">
-              <div className="flex justify-between items-center mb-4">
-                {hasSelectedUnredeemedItems && (
-                  <div className="flex items-center space-x-2">
-                    <Badge variant="outline">{selectedUnredeemedItems.length} seleccionados</Badge>
-                    <Button variant="outline" size="sm">
-                      <ShoppingCart className="h-4 w-4 mr-1" /> Marcar como retirado
-                    </Button>
-                    <Button variant="destructive" size="sm">
-                      <Trash className="h-4 w-4 mr-1" /> Cancelar
-                    </Button>
-                  </div>
-                )}
-              </div>
-              
-              <Table>
-                <TableHeader>
-                  <TableRow>
-                    <TableHead className="w-[48px]">
-                      <Checkbox 
-                        checked={areAllUnredeemedItemsSelected}
-                        onCheckedChange={toggleAllUnredeemedItems}
-                      />
-                    </TableHead>
-                    <TableHead>Producto</TableHead>
-                    <TableHead>Cantidad</TableHead>
-                    <TableHead>Bar</TableHead>
-                    <TableHead>Fecha</TableHead>
-                    <TableHead>Usuario</TableHead>
-                    <TableHead>Acciones</TableHead>
-                  </TableRow>
-                </TableHeader>
-                <TableBody>
-                  {unredeemedStockData.map(item => (
-                    <TableRow key={item.id}>
-                      <TableCell>
-                        <Checkbox 
-                          checked={selectedUnredeemedItems.includes(item.id)}
-                          onCheckedChange={() => toggleUnredeemedItemSelection(item.id)}
-                        />
-                      </TableCell>
-                      <TableCell className="font-medium">{item.product}</TableCell>
-                      <TableCell>{item.quantity}</TableCell>
-                      <TableCell>
-                        <Button 
-                          variant="link" 
-                          className="p-0 h-auto font-normal text-blue-600 hover:text-blue-800"
-                          onClick={() => goToBarDetail(item.bar)}
-                        >
-                          {item.bar}
-                        </Button>
-                      </TableCell>
-                      <TableCell>{item.date}</TableCell>
-                      <TableCell>{item.user}</TableCell>
-                      <TableCell>
-                        <div className="flex gap-2">
-                          <Button variant="outline" size="sm">Marcar como retirado</Button>
-                          <Button 
-                            variant="ghost" 
-                            size="icon"
-                            onClick={() => handleAdjustStock(item.product)}
-                          >
-                            <PackageX className="h-4 w-4" />
-                          </Button>
-                        </div>
-                      </TableCell>
-                    </TableRow>
-                  ))}
-                </TableBody>
-              </Table>
             </TabsContent>
             
             {/* Ajustes de Stock */}
@@ -543,13 +527,13 @@ const Stock = () => {
         </DialogContent>
       </Dialog>
 
-      {/* Dialog para nueva transferencia */}
+      {/* Dialog para nueva transferencia with multi-bar selection*/}
       <Dialog open={transferDialogOpen} onOpenChange={setTransferDialogOpen}>
         <DialogContent className="sm:max-w-[425px]">
           <DialogHeader>
             <DialogTitle>Nueva Transferencia</DialogTitle>
             <DialogDescription>
-              Crear una nueva transferencia entre barras
+              Crear una nueva transferencia a múltiples barras
             </DialogDescription>
           </DialogHeader>
           <form onSubmit={transferForm.handleSubmit(onSubmitTransfer)}>
@@ -598,24 +582,29 @@ const Stock = () => {
                   </SelectContent>
                 </Select>
               </div>
+              
               <div className="space-y-2">
-                <Label htmlFor="toBar">Barra de destino</Label>
-                <Select
-                  value={transferForm.watch("toBar")}
-                  onValueChange={(value) => transferForm.setValue("toBar", value)}
-                >
-                  <SelectTrigger>
-                    <SelectValue placeholder="Selecciona la barra de destino" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    {bars
-                      .filter(bar => bar !== "Todos" && bar !== transferForm.watch("fromBar"))
-                      .map((bar) => (
-                        <SelectItem key={bar} value={bar}>{bar}</SelectItem>
-                      ))}
-                  </SelectContent>
-                </Select>
+                <Label>Barras de destino</Label>
+                <div className="grid grid-cols-2 gap-2 border rounded-md p-3">
+                  {bars
+                    .filter(bar => bar !== "Todos" && bar !== transferForm.watch("fromBar"))
+                    .map((bar) => (
+                      <div key={bar} className="flex items-center space-x-2">
+                        <Checkbox 
+                          id={`bar-${bar}`}
+                          checked={transferForm.watch("selectedBars")?.includes(bar) || false}
+                          onCheckedChange={() => toggleBarSelection(bar)}
+                        />
+                        <Label htmlFor={`bar-${bar}`}>{bar}</Label>
+                      </div>
+                    ))
+                  }
+                </div>
+                {transferForm.watch("selectedBars")?.length === 0 && (
+                  <p className="text-amber-500 text-sm">Selecciona al menos una barra de destino</p>
+                )}
               </div>
+              
               <div className="space-y-2">
                 <Label htmlFor="transferType">Tipo de transferencia</Label>
                 <Select
@@ -661,8 +650,22 @@ const Stock = () => {
         onSubmitReingress={handleStockReingress}
         onSubmitLoss={handleStockLoss}
       />
+      
+      {/* Product Detail Modal */}
+      <ProductDetailModal 
+        open={productDetailOpen}
+        onOpenChange={setProductDetailOpen}
+        product={currentProduct}
+      />
     </>
   );
 };
+
+function goToBarDetail(barName: string) {
+  const bar = bars.findIndex(b => b === barName);
+  if (bar > 0) { // Skipping "Todos"
+    window.location.href = `/bars/${bar}`;
+  }
+}
 
 export default Stock;

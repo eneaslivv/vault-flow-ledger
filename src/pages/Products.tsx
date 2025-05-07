@@ -1,5 +1,4 @@
 import { useState } from "react";
-import { useNavigate } from "react-router-dom";
 import { PageHeader } from "@/components/PageHeader";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
@@ -15,6 +14,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/u
 import { Checkbox } from "@/components/ui/checkbox";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuSeparator, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
 import { BookOpen, Plus, Edit, Trash, Eye, Filter, PackagePlus, PackageX, Gift, Coins, MoreVertical } from "lucide-react";
+import { ProductDetailModal } from "@/components/products/ProductDetailModal";
 
 // Mock data for products
 const productsData = [{
@@ -281,6 +281,8 @@ const Products = () => {
   const [tokenSettingsOpen, setTokenSettingsOpen] = useState(false);
   const [products, setProducts] = useState(productsData);
   const [selectedProducts, setSelectedProducts] = useState<number[]>([]);
+  const [productDetailOpen, setProductDetailOpen] = useState(false);
+  const [currentProduct, setCurrentProduct] = useState(null);
   
   const handleAdjustStock = (productName: string = "") => {
     setProductToAdjust(productName);
@@ -377,8 +379,9 @@ const Products = () => {
     setSelectedProducts([]);
   };
 
-  const viewProductDetail = (productId: number) => {
-    navigate(`/products/${productId}`);
+  const viewProductDetail = (product) => {
+    setCurrentProduct(product);
+    setProductDetailOpen(true);
   };
 
   // Filter products based on filters
@@ -521,7 +524,7 @@ const Products = () => {
                         <Button 
                           variant="link" 
                           className="p-0 h-auto font-medium text-blue-600 hover:text-blue-800"
-                          onClick={() => viewProductDetail(product.id)}
+                          onClick={() => viewProductDetail(product)}
                         >
                           {product.name}
                         </Button>
@@ -581,7 +584,7 @@ const Products = () => {
                             </Button>
                           </DropdownMenuTrigger>
                           <DropdownMenuContent align="end">
-                            <DropdownMenuItem onClick={() => viewProductDetail(product.id)}>
+                            <DropdownMenuItem onClick={() => viewProductDetail(product)}>
                               <Eye className="h-4 w-4 mr-2" />
                               Ver Detalles
                             </DropdownMenuItem>
@@ -844,6 +847,13 @@ const Products = () => {
           {selectedProduct && <PRTokenSettingsDialog product={selectedProduct} onSave={saveTokenSettings} />}
         </DialogContent>
       </Dialog>
+
+      {/* Product Detail Modal */}
+      <ProductDetailModal 
+        open={productDetailOpen}
+        onOpenChange={setProductDetailOpen}
+        product={currentProduct}
+      />
     </>
   );
 };
