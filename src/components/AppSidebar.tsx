@@ -1,56 +1,50 @@
-
 import { useState } from "react";
 import { NavLink } from "react-router-dom";
-import {
-  Sidebar,
-  SidebarContent,
-  SidebarFooter,
-  SidebarHeader,
-  SidebarGroup,
-  SidebarGroupContent,
-  SidebarGroupLabel,
-  SidebarMenu,
-  SidebarMenuItem,
-  SidebarMenuButton,
-} from "@/components/ui/sidebar";
-import { 
-  ArrowRightLeft,
-  BarChart,
-  Briefcase,
-  CreditCard,
-  Database,
-  DollarSign,
-  Home,
-  Settings,
-  ShoppingCart,
-  User,
-  Users,
-  ClipboardList,
-  BookOpen,
-  QrCode,
-} from "lucide-react";
+import { Sidebar, SidebarContent, SidebarFooter, SidebarHeader, SidebarGroup, SidebarGroupContent, SidebarGroupLabel, SidebarMenu, SidebarMenuItem, SidebarMenuButton } from "@/components/ui/sidebar";
+import { ArrowRightLeft, BarChart, Briefcase, CreditCard, Database, DollarSign, Home, Settings, ShoppingCart, User, Users, ClipboardList, BookOpen, QrCode } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
-
-const mainNavItems = [
-  { title: "Inicio", icon: Home, path: "/" },
-  { title: "Pedidos", icon: ClipboardList, path: "/orders" },
-  { title: "Finanzas & Saldos", icon: DollarSign, path: "/finances" },
-  { title: "Stock & Reasignaciones", icon: Database, path: "/stock" },
-  { title: "Carta & Productos", icon: BookOpen, path: "/products" },
-  { title: "Barras & QRs", icon: QrCode, path: "/bars" },
-];
-
-const managementNavItems = [
-  { title: "Roles & Usuarios", icon: User, path: "/users" },
-  { title: "Reportes & Métricas", icon: BarChart, path: "/reports" },
-  { title: "Configuración", icon: Settings, path: "/settings" },
-];
-
+const mainNavItems = [{
+  title: "Inicio",
+  icon: Home,
+  path: "/"
+}, {
+  title: "Pedidos",
+  icon: ClipboardList,
+  path: "/orders"
+}, {
+  title: "Finanzas & Saldos",
+  icon: DollarSign,
+  path: "/finances"
+}, {
+  title: "Stock & Reasignaciones",
+  icon: Database,
+  path: "/stock"
+}, {
+  title: "Carta & Productos",
+  icon: BookOpen,
+  path: "/products"
+}, {
+  title: "Barras & QRs",
+  icon: QrCode,
+  path: "/bars"
+}];
+const managementNavItems = [{
+  title: "Roles & Usuarios",
+  icon: User,
+  path: "/users"
+}, {
+  title: "Reportes & Métricas",
+  icon: BarChart,
+  path: "/reports"
+}, {
+  title: "Configuración",
+  icon: Settings,
+  path: "/settings"
+}];
 export function AppSidebar() {
-  return (
-    <Sidebar className="bg-white">
-      <SidebarHeader className="p-4 border-b">
+  return <Sidebar className="bg-white">
+      <SidebarHeader className="p-4 border-b bg-stone-100">
         <div className="flex items-center gap-2">
           <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-blue-500 text-white">
             <span className="font-bold text-lg">V</span>
@@ -59,27 +53,21 @@ export function AppSidebar() {
         </div>
       </SidebarHeader>
 
-      <SidebarContent>
+      <SidebarContent className="bg-stone-100">
         <SidebarGroup>
           <SidebarGroupLabel className="text-gray-500">Principal</SidebarGroupLabel>
           <SidebarGroupContent>
             <SidebarMenu>
-              {mainNavItems.map((item) => (
-                <SidebarMenuItem key={item.path}>
+              {mainNavItems.map(item => <SidebarMenuItem key={item.path}>
                   <SidebarMenuButton asChild>
-                    <NavLink 
-                      to={item.path}
-                      className={({ isActive }) => cn(
-                        "text-gray-600 hover:bg-blue-50 hover:text-blue-700",
-                        isActive && "bg-blue-50 text-blue-700 font-medium"
-                      )}
-                    >
-                      <item.icon className="h-5 w-5" />
-                      <span>{item.title}</span>
+                    <NavLink to={item.path} className={({
+                  isActive
+                }) => cn("text-gray-600 hover:bg-blue-50 hover:text-blue-700", isActive && "bg-blue-50 text-blue-700 font-medium")}>
+                      <item.icon className="h-5 w-5 bg-stone-100" />
+                      <span className="text-stone-700">{item.title}</span>
                     </NavLink>
                   </SidebarMenuButton>
-                </SidebarMenuItem>
-              ))}
+                </SidebarMenuItem>)}
             </SidebarMenu>
           </SidebarGroupContent>
         </SidebarGroup>
@@ -88,22 +76,16 @@ export function AppSidebar() {
           <SidebarGroupLabel className="text-gray-500">Administración</SidebarGroupLabel>
           <SidebarGroupContent>
             <SidebarMenu>
-              {managementNavItems.map((item) => (
-                <SidebarMenuItem key={item.path}>
+              {managementNavItems.map(item => <SidebarMenuItem key={item.path}>
                   <SidebarMenuButton asChild>
-                    <NavLink 
-                      to={item.path}
-                      className={({ isActive }) => cn(
-                        "text-gray-600 hover:bg-blue-50 hover:text-blue-700",
-                        isActive && "bg-blue-50 text-blue-700 font-medium"
-                      )}
-                    >
+                    <NavLink to={item.path} className={({
+                  isActive
+                }) => cn("text-gray-600 hover:bg-blue-50 hover:text-blue-700", isActive && "bg-blue-50 text-blue-700 font-medium")}>
                       <item.icon className="h-5 w-5" />
-                      <span>{item.title}</span>
+                      <span className="text-stone-700">{item.title}</span>
                     </NavLink>
                   </SidebarMenuButton>
-                </SidebarMenuItem>
-              ))}
+                </SidebarMenuItem>)}
             </SidebarMenu>
           </SidebarGroupContent>
         </SidebarGroup>
@@ -125,6 +107,5 @@ export function AppSidebar() {
           </Button>
         </div>
       </SidebarFooter>
-    </Sidebar>
-  );
+    </Sidebar>;
 }
