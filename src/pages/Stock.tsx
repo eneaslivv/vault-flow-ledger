@@ -1,3 +1,4 @@
+
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { PageHeader } from "@/components/PageHeader";
@@ -10,22 +11,24 @@ import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, D
 import { Label } from "@/components/ui/label";
 import { Input } from "@/components/ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { Checkbox } from "@/components/ui/checkbox";
 import { useForm } from "react-hook-form";
 import { toast } from "sonner";
 import { StockTransfers } from "@/components/bars/StockTransfers";
 import { StockAdjustment } from "@/components/stock/StockAdjustment";
 import { StockAdjustmentHistory } from "@/components/stock/StockAdjustmentHistory";
 import { MultipleTransfer } from "@/components/stock/MultipleTransfer";
+import { CustomDrinks } from "@/components/products/CustomDrinks";
 import { 
   ArrowRight, 
   Box, 
-  Gift, 
   Search,
   ShoppingCart,
   ArrowRightLeft,
   PackagePlus,
   PackageX,
-  Plus
+  Plus,
+  Trash
 } from "lucide-react";
 
 // Mock data for stock
@@ -36,13 +39,6 @@ const stockData = [
   { id: 4, product: "Gin Beefeater 750ml", category: "Alcoholico", quantity: 38, bar: "Bar Sur", status: "En Stock" },
   { id: 5, product: "Whisky Johnnie Walker 750ml", category: "Alcoholico", quantity: 20, bar: "El Alamo", status: "En Stock" },
   { id: 6, product: "Champagne Moët & Chandon", category: "Alcoholico", quantity: 15, bar: "Bar Central", status: "En Stock" },
-];
-
-// Mock data for courtesies
-const courtesiesStockData = [
-  { id: 1, product: "Vodka Red Bull", category: "Alcoholico", quantity: 5, bar: "El Alamo", givenBy: "PR Juan" },
-  { id: 2, product: "Champagne Moët & Chandon", category: "Alcoholico", quantity: 2, bar: "Bar Central", givenBy: "Admin Central" },
-  { id: 3, product: "Gin Tonic Beefeater", category: "Alcoholico", quantity: 3, bar: "Bar Norte", givenBy: "Sistema" },
 ];
 
 // Mock data for unredeemed
@@ -65,6 +61,8 @@ const Stock = () => {
   const [stockAdjustmentOpen, setStockAdjustmentOpen] = useState(false);
   const [productToAdjust, setProductToAdjust] = useState("");
   const [multipleTransferOpen, setMultipleTransferOpen] = useState(false);
+  const [selectedStockItems, setSelectedStockItems] = useState<number[]>([]);
+  const [selectedUnredeemedItems, setSelectedUnredeemedItems] = useState<number[]>([]);
   
   const assignForm = useForm({
     defaultValues: {
@@ -111,9 +109,47 @@ const Stock = () => {
     setStockAdjustmentOpen(true);
   };
 
+  const toggleStockItemSelection = (itemId: number) => {
+    setSelectedStockItems(prev => {
+      if (prev.includes(itemId)) {
+        return prev.filter(id => id !== itemId);
+      } else {
+        return [...prev, itemId];
+      }
+    });
+  };
+  
+  const toggleAllStockItems = (checked: boolean) => {
+    if (checked) {
+      setSelectedStockItems(filteredStock.map(item => item.id));
+    } else {
+      setSelectedStockItems([]);
+    }
+  };
+  
+  const toggleUnredeemedItemSelection = (itemId: number) => {
+    setSelectedUnredeemedItems(prev => {
+      if (prev.includes(itemId)) {
+        return prev.filter(id => id !== itemId);
+      } else {
+        return [...prev, itemId];
+      }
+    });
+  };
+  
+  const toggleAllUnredeemedItems = (checked: boolean) => {
+    if (checked) {
+      setSelectedUnredeemedItems(unredeemedStockData.map(item => item.id));
+    } else {
+      setSelectedUnredeemedItems([]);
+    }
+  };
+
   const handleMultipleTransferSuccess = (data: any) => {
     console.log("Transferencia múltiple completada:", data);
     // Aquí iría la lógica para actualizar el stock
+    toast.success("Transferencia múltiple completada correctamente");
+    setSelectedStockItems([]);
   };
 
   const onSubmitAssign = (data: any) => {
@@ -150,15 +186,28 @@ const Stock = () => {
     }
   };
   
+  const viewProductDetail = (productId: number) => {
+    navigate(`/products/${productId}`);
+  };
+
   const selectedProductData = selectedProduct 
     ? stockData.find(product => product.id === selectedProduct) 
     : null;
+    
+  const areAllStockItemsSelected = filteredStock.length > 0 && 
+    filteredStock.every(item => selectedStockItems.includes(item.id));
+    
+  const areAllUnredeemedItemsSelected = unredeemedStockData.length > 0 && 
+    unredeemedStockData.every(item => selectedUnredeemedItems.includes(item.id));
+    
+  const hasSelectedStockItems = selectedStockItems.length > 0;
+  const hasSelectedUnredeemedItems = selectedUnredeemedItems.length > 0;
   
   return (
     <>
       <PageHeader 
         title="Gestión de Stock Avanzado" 
-        description="Control de inventario, cortesías y transferencias"
+        description="Control de inventario y transferencias"
       >
         <Button className="mr-2" onClick={handleMultipleTransfer}>
           <ArrowRightLeft className="mr-2 h-4 w-4" />
@@ -186,7 +235,7 @@ const Stock = () => {
           </CardHeader>
           <CardContent>
             <div className="text-3xl font-bold">1,480</div>
-            <p className="text-sm text-muted-foreground">En todos los bares</p>
+            <p className="text-sm text-gray-500">En todos los bares</p>
           </CardContent>
         </Card>
         
@@ -197,7 +246,7 @@ const Stock = () => {
           </CardHeader>
           <CardContent>
             <div className="text-3xl font-bold">79</div>
-            <p className="text-sm text-muted-foreground">Entre bares</p>
+            <p className="text-sm text-gray-500">Entre bares</p>
           </CardContent>
         </Card>
         
@@ -208,7 +257,7 @@ const Stock = () => {
           </CardHeader>
           <CardContent>
             <div className="text-3xl font-bold">45</div>
-            <p className="text-sm text-muted-foreground">Valor: $8,250</p>
+            <p className="text-sm text-gray-500">Valor: $8,250</p>
           </CardContent>
         </Card>
       </div>
@@ -216,12 +265,12 @@ const Stock = () => {
       <Card>
         <CardHeader>
           <CardTitle>Inventario Detallado</CardTitle>
-          <CardDescription>Productos, cortesías, transferencias y pendientes</CardDescription>
+          <CardDescription>Productos, transferencias, pendientes y ajustes</CardDescription>
         </CardHeader>
         <CardContent>
           <div className="flex flex-col md:flex-row gap-4 mb-6">
             <div className="relative flex-1">
-              <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground" />
+              <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-gray-500" />
               <Input
                 placeholder="Buscar productos..."
                 className="pl-8"
@@ -245,18 +294,38 @@ const Stock = () => {
           
           <Tabs value={activeTab} onValueChange={setActiveTab}>
             <TabsList className="grid w-full grid-cols-5">
-              <TabsTrigger value="stock">En Stock</TabsTrigger>
-              <TabsTrigger value="courtesies">Cortesías</TabsTrigger>
+              <TabsTrigger value="stock">En Stock y Reasignaciones</TabsTrigger>
+              <TabsTrigger value="custom">Tragos Personalizados</TabsTrigger>
               <TabsTrigger value="transfers">Transferencias</TabsTrigger>
               <TabsTrigger value="unredeemed">No Retirados</TabsTrigger>
               <TabsTrigger value="adjustments">Ajustes</TabsTrigger>
             </TabsList>
             
-            {/* En Stock */}
+            {/* En Stock y Reasignaciones */}
             <TabsContent value="stock">
+              <div className="flex justify-between items-center mb-4">
+                {hasSelectedStockItems && (
+                  <div className="flex items-center space-x-2">
+                    <Badge variant="outline">{selectedStockItems.length} seleccionados</Badge>
+                    <Button variant="outline" size="sm" onClick={handleMultipleTransfer}>
+                      <ArrowRightLeft className="h-4 w-4 mr-1" /> Transferir
+                    </Button>
+                    <Button variant="destructive" size="sm">
+                      <Trash className="h-4 w-4 mr-1" /> Eliminar
+                    </Button>
+                  </div>
+                )}
+              </div>
+              
               <Table>
                 <TableHeader>
                   <TableRow>
+                    <TableHead className="w-[48px]">
+                      <Checkbox 
+                        checked={areAllStockItemsSelected}
+                        onCheckedChange={toggleAllStockItems}
+                      />
+                    </TableHead>
                     <TableHead>Producto</TableHead>
                     <TableHead>Categoría</TableHead>
                     <TableHead>Cantidad</TableHead>
@@ -268,7 +337,21 @@ const Stock = () => {
                 <TableBody>
                   {filteredStock.map(item => (
                     <TableRow key={item.id}>
-                      <TableCell className="font-medium">{item.product}</TableCell>
+                      <TableCell>
+                        <Checkbox 
+                          checked={selectedStockItems.includes(item.id)}
+                          onCheckedChange={() => toggleStockItemSelection(item.id)}
+                        />
+                      </TableCell>
+                      <TableCell className="font-medium">
+                        <Button 
+                          variant="link" 
+                          className="p-0 h-auto font-medium text-blue-600 hover:text-blue-800"
+                          onClick={() => viewProductDetail(item.id)}
+                        >
+                          {item.product}
+                        </Button>
+                      </TableCell>
                       <TableCell>{item.category}</TableCell>
                       <TableCell>{item.quantity}</TableCell>
                       <TableCell>
@@ -310,53 +393,9 @@ const Stock = () => {
               </Table>
             </TabsContent>
             
-            {/* Cortesías */}
-            <TabsContent value="courtesies">
-              <Table>
-                <TableHeader>
-                  <TableRow>
-                    <TableHead>Producto</TableHead>
-                    <TableHead>Categoría</TableHead>
-                    <TableHead>Cantidad</TableHead>
-                    <TableHead>Bar</TableHead>
-                    <TableHead>Otorgado por</TableHead>
-                    <TableHead>Acciones</TableHead>
-                  </TableRow>
-                </TableHeader>
-                <TableBody>
-                  {courtesiesStockData.map(item => (
-                    <TableRow key={item.id}>
-                      <TableCell className="font-medium">{item.product}</TableCell>
-                      <TableCell>{item.category}</TableCell>
-                      <TableCell>{item.quantity}</TableCell>
-                      <TableCell>
-                        <Button 
-                          variant="link" 
-                          className="p-0 h-auto font-normal text-blue-600 hover:text-blue-800"
-                          onClick={() => goToBarDetail(item.bar)}
-                        >
-                          {item.bar}
-                        </Button>
-                      </TableCell>
-                      <TableCell>{item.givenBy}</TableCell>
-                      <TableCell>
-                        <div className="flex gap-2">
-                          <Button variant="ghost" size="icon">
-                            <ShoppingCart className="h-4 w-4" />
-                          </Button>
-                          <Button 
-                            variant="ghost" 
-                            size="icon"
-                            onClick={() => handleAdjustStock(item.product)}
-                          >
-                            <PackageX className="h-4 w-4" />
-                          </Button>
-                        </div>
-                      </TableCell>
-                    </TableRow>
-                  ))}
-                </TableBody>
-              </Table>
+            {/* Tragos Personalizados */}
+            <TabsContent value="custom">
+              <CustomDrinks selectedBar={selectedBar.toLowerCase()} showCheckboxes={true} />
             </TabsContent>
             
             {/* Transferencias */}
@@ -366,9 +405,29 @@ const Stock = () => {
             
             {/* No Retirados */}
             <TabsContent value="unredeemed">
+              <div className="flex justify-between items-center mb-4">
+                {hasSelectedUnredeemedItems && (
+                  <div className="flex items-center space-x-2">
+                    <Badge variant="outline">{selectedUnredeemedItems.length} seleccionados</Badge>
+                    <Button variant="outline" size="sm">
+                      <ShoppingCart className="h-4 w-4 mr-1" /> Marcar como retirado
+                    </Button>
+                    <Button variant="destructive" size="sm">
+                      <Trash className="h-4 w-4 mr-1" /> Cancelar
+                    </Button>
+                  </div>
+                )}
+              </div>
+              
               <Table>
                 <TableHeader>
                   <TableRow>
+                    <TableHead className="w-[48px]">
+                      <Checkbox 
+                        checked={areAllUnredeemedItemsSelected}
+                        onCheckedChange={toggleAllUnredeemedItems}
+                      />
+                    </TableHead>
                     <TableHead>Producto</TableHead>
                     <TableHead>Cantidad</TableHead>
                     <TableHead>Bar</TableHead>
@@ -380,6 +439,12 @@ const Stock = () => {
                 <TableBody>
                   {unredeemedStockData.map(item => (
                     <TableRow key={item.id}>
+                      <TableCell>
+                        <Checkbox 
+                          checked={selectedUnredeemedItems.includes(item.id)}
+                          onCheckedChange={() => toggleUnredeemedItemSelection(item.id)}
+                        />
+                      </TableCell>
                       <TableCell className="font-medium">{item.product}</TableCell>
                       <TableCell>{item.quantity}</TableCell>
                       <TableCell>

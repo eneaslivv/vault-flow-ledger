@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { useNavigate } from "react-router-dom";
 import { PageHeader } from "@/components/PageHeader";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
@@ -10,11 +11,10 @@ import { Input } from "@/components/ui/input";
 import { Switch } from "@/components/ui/switch";
 import { Label } from "@/components/ui/label";
 import { StockAdjustment } from "@/components/stock/StockAdjustment";
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Checkbox } from "@/components/ui/checkbox";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuSeparator, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
 import { BookOpen, Plus, Edit, Trash, Eye, Filter, PackagePlus, PackageX, Gift, Coins, MoreVertical } from "lucide-react";
-import { CustomDrinks } from "@/components/products/CustomDrinks";
 
 // Mock data for products
 const productsData = [{
@@ -138,43 +138,37 @@ const categoriesData = [{
   description: "Combinaciones de productos con descuento"
 }];
 
-// Mock data for price by bar
-const pricesByBarData = [{
-  productId: 1,
-  productName: "Gin Tonic",
-  barCentral: "$800",
-  barNorte: "$850",
-  barSur: "$850",
-  barVIP: "$950"
-}, {
-  productId: 2,
-  productName: "Vodka Tonic",
-  barCentral: "$750",
-  barNorte: "$800",
-  barSur: "-",
-  barVIP: "-"
-}, {
-  productId: 3,
-  productName: "Cerveza",
-  barCentral: "$500",
-  barNorte: "$550",
-  barSur: "$550",
-  barVIP: "$650"
-}, {
-  productId: 4,
-  productName: "Fernet con Coca",
-  barCentral: "$700",
-  barNorte: "$750",
-  barSur: "$750",
-  barVIP: "-"
-}, {
-  productId: 5,
-  productName: "Champagne",
-  barCentral: "-",
-  barNorte: "-",
-  barSur: "-",
-  barVIP: "$12500"
-}];
+// Mock data for courtesies
+const courtesiesData = [
+  { 
+    id: 1, 
+    product: "Vodka Red Bull", 
+    category: "Alcoholico", 
+    maxPerNight: 5, 
+    givenByRank: ["VIP"], 
+    givenToday: 3, 
+    bar: "El Alamo" 
+  },
+  { 
+    id: 2, 
+    product: "Champagne Moët & Chandon", 
+    category: "Alcoholico", 
+    maxPerNight: 2, 
+    givenByRank: ["VIP"], 
+    givenToday: 1, 
+    bar: "Bar Central" 
+  },
+  { 
+    id: 3, 
+    product: "Gin Tonic Beefeater", 
+    category: "Alcoholico", 
+    maxPerNight: 8, 
+    givenByRank: ["VIP", "Premium"], 
+    givenToday: 5, 
+    bar: "Bar Norte" 
+  },
+];
+
 const CourtesySettingsDialog = ({
   product,
   onSave
@@ -275,6 +269,7 @@ const PRTokenSettingsDialog = ({
 };
 
 const Products = () => {
+  const navigate = useNavigate();
   const [selectedBarFilter, setSelectedBarFilter] = useState("all");
   const [selectedCategoryFilter, setSelectedCategoryFilter] = useState("all");
   const [stockAdjustmentOpen, setStockAdjustmentOpen] = useState(false);
@@ -382,6 +377,10 @@ const Products = () => {
     setSelectedProducts([]);
   };
 
+  const viewProductDetail = (productId: number) => {
+    navigate(`/products/${productId}`);
+  };
+
   // Filter products based on filters
   let filteredProducts = products;
   if (courtesyFilterOn) {
@@ -396,7 +395,8 @@ const Products = () => {
     
   const hasSelectedProducts = selectedProducts.length > 0;
   
-  return <>
+  return (
+    <>
       <PageHeader title="Carta & Productos" description="Gestión de productos, precios y disponibilidad">
         <Button className="mr-2" onClick={() => handleAdjustStock()}>
           <PackagePlus className="mr-2 h-4 w-4" />
@@ -418,7 +418,7 @@ const Products = () => {
             <TabsList className="grid w-full grid-cols-3">
               <TabsTrigger value="products">Productos</TabsTrigger>
               <TabsTrigger value="categories">Categorías</TabsTrigger>
-              <TabsTrigger value="custom">Tragos Personalizados</TabsTrigger>
+              <TabsTrigger value="courtesies">Cortesías</TabsTrigger>
             </TabsList>
             
             {/* Productos */}
@@ -517,7 +517,15 @@ const Products = () => {
                         />
                       </TableCell>
                       <TableCell>#{product.id}</TableCell>
-                      <TableCell>{product.name}</TableCell>
+                      <TableCell>
+                        <Button 
+                          variant="link" 
+                          className="p-0 h-auto font-medium text-blue-600 hover:text-blue-800"
+                          onClick={() => viewProductDetail(product.id)}
+                        >
+                          {product.name}
+                        </Button>
+                      </TableCell>
                       <TableCell>{product.category}</TableCell>
                       <TableCell>{product.price}</TableCell>
                       <TableCell>
@@ -573,13 +581,13 @@ const Products = () => {
                             </Button>
                           </DropdownMenuTrigger>
                           <DropdownMenuContent align="end">
+                            <DropdownMenuItem onClick={() => viewProductDetail(product.id)}>
+                              <Eye className="h-4 w-4 mr-2" />
+                              Ver Detalles
+                            </DropdownMenuItem>
                             <DropdownMenuItem onClick={() => handleAdjustStock(product.name)}>
                               <PackagePlus className="h-4 w-4 mr-2" />
                               Ajustar Stock
-                            </DropdownMenuItem>
-                            <DropdownMenuItem>
-                              <Eye className="h-4 w-4 mr-2" />
-                              Ver Detalles
                             </DropdownMenuItem>
                             <DropdownMenuItem>
                               <Edit className="h-4 w-4 mr-2" />
@@ -680,9 +688,57 @@ const Products = () => {
               </Table>
             </TabsContent>
             
-            {/* Tragos Personalizados */}
-            <TabsContent value="custom">
-              <CustomDrinks selectedBar={selectedBarFilter} />
+            {/* Cortesías */}
+            <TabsContent value="courtesies">
+              <Table>
+                <TableHeader>
+                  <TableRow>
+                    <TableHead className="w-[48px]">
+                      <Checkbox />
+                    </TableHead>
+                    <TableHead>Producto</TableHead>
+                    <TableHead>Categoría</TableHead>
+                    <TableHead>Máx. por noche</TableHead>
+                    <TableHead>Rangos permitidos</TableHead>
+                    <TableHead>Otorgados hoy</TableHead>
+                    <TableHead>Bar</TableHead>
+                    <TableHead className="text-right">Acciones</TableHead>
+                  </TableRow>
+                </TableHeader>
+                <TableBody>
+                  {courtesiesData.map(item => (
+                    <TableRow key={item.id}>
+                      <TableCell>
+                        <Checkbox />
+                      </TableCell>
+                      <TableCell className="font-medium">{item.product}</TableCell>
+                      <TableCell>{item.category}</TableCell>
+                      <TableCell>{item.maxPerNight}</TableCell>
+                      <TableCell>
+                        <div className="flex flex-wrap gap-1">
+                          {item.givenByRank.map(rank => (
+                            <Badge key={rank} variant="secondary" className="text-xs">
+                              {rank}
+                            </Badge>
+                          ))}
+                        </div>
+                      </TableCell>
+                      <TableCell>
+                        <Badge variant={item.givenToday >= item.maxPerNight ? "destructive" : "outline"}>
+                          {item.givenToday}/{item.maxPerNight}
+                        </Badge>
+                      </TableCell>
+                      <TableCell>{item.bar}</TableCell>
+                      <TableCell className="text-right">
+                        <Button variant="outline" size="sm">
+                          <Edit className="h-4 w-4 mr-2" />
+                          Editar
+                        </Button>
+                      </TableCell>
+                    </TableRow>
+                  ))}
+                </TableBody>
+              </Table>
             </TabsContent>
           </Tabs>
         </CardContent>
@@ -788,6 +844,8 @@ const Products = () => {
           {selectedProduct && <PRTokenSettingsDialog product={selectedProduct} onSave={saveTokenSettings} />}
         </DialogContent>
       </Dialog>
-    </>;
+    </>
+  );
 };
+
 export default Products;

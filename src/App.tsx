@@ -19,6 +19,7 @@ import PR from "./pages/PR";
 import Reports from "./pages/Reports";
 import Settings from "./pages/Settings";
 import NotFound from "./pages/NotFound";
+import ProductDetail from "./pages/ProductDetail";
 
 const queryClient = new QueryClient();
 
@@ -35,6 +36,7 @@ const App = () => (
             <Route path="finances" element={<Finances />} />
             <Route path="stock" element={<Stock />} />
             <Route path="products" element={<Products />} />
+            <Route path="products/:productId" element={<ProductDetail />} />
             <Route path="bars" element={<Bars />} />
             <Route path="bars/:barId" element={<BarDetail />} />
             <Route path="users" element={<Users />} />

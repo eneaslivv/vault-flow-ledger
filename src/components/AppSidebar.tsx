@@ -49,19 +49,19 @@ const managementNavItems = [
 
 export function AppSidebar() {
   return (
-    <Sidebar>
-      <SidebarHeader className="p-4">
+    <Sidebar className="bg-white">
+      <SidebarHeader className="p-4 border-b">
         <div className="flex items-center gap-2">
-          <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-vares-500 text-white">
+          <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-blue-500 text-white">
             <span className="font-bold text-lg">V</span>
           </div>
-          <span className="font-semibold text-xl text-vares-800">VARES</span>
+          <span className="font-semibold text-xl text-gray-800">VARES</span>
         </div>
       </SidebarHeader>
 
       <SidebarContent>
         <SidebarGroup>
-          <SidebarGroupLabel>Principal</SidebarGroupLabel>
+          <SidebarGroupLabel className="text-gray-500">Principal</SidebarGroupLabel>
           <SidebarGroupContent>
             <SidebarMenu>
               {mainNavItems.map((item) => (
@@ -70,7 +70,8 @@ export function AppSidebar() {
                     <NavLink 
                       to={item.path}
                       className={({ isActive }) => cn(
-                        isActive && "bg-sidebar-accent text-sidebar-accent-foreground"
+                        "text-gray-600 hover:bg-blue-50 hover:text-blue-700",
+                        isActive && "bg-blue-50 text-blue-700 font-medium"
                       )}
                     >
                       <item.icon className="h-5 w-5" />
@@ -84,7 +85,7 @@ export function AppSidebar() {
         </SidebarGroup>
 
         <SidebarGroup>
-          <SidebarGroupLabel>Administración</SidebarGroupLabel>
+          <SidebarGroupLabel className="text-gray-500">Administración</SidebarGroupLabel>
           <SidebarGroupContent>
             <SidebarMenu>
               {managementNavItems.map((item) => (
@@ -93,7 +94,8 @@ export function AppSidebar() {
                     <NavLink 
                       to={item.path}
                       className={({ isActive }) => cn(
-                        isActive && "bg-sidebar-accent text-sidebar-accent-foreground"
+                        "text-gray-600 hover:bg-blue-50 hover:text-blue-700",
+                        isActive && "bg-blue-50 text-blue-700 font-medium"
                       )}
                     >
                       <item.icon className="h-5 w-5" />
@@ -107,15 +109,15 @@ export function AppSidebar() {
         </SidebarGroup>
       </SidebarContent>
 
-      <SidebarFooter className="p-4">
+      <SidebarFooter className="p-4 border-t">
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-2">
-            <div className="h-8 w-8 rounded-full bg-vares-200 flex items-center justify-center">
-              <User className="h-4 w-4 text-vares-600" />
+            <div className="h-8 w-8 rounded-full bg-blue-100 flex items-center justify-center">
+              <User className="h-4 w-4 text-blue-600" />
             </div>
             <div>
-              <p className="text-sm font-medium">Admin</p>
-              <p className="text-xs text-muted-foreground">admin@vares.com</p>
+              <p className="text-sm font-medium text-gray-800">Admin</p>
+              <p className="text-xs text-gray-500">admin@vares.com</p>
             </div>
           </div>
           <Button variant="ghost" size="icon">
