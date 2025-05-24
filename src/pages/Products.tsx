@@ -396,10 +396,9 @@ const Products = () => {
         </CardHeader>
         <CardContent>
           <Tabs defaultValue="products">
-            <TabsList className="grid w-full grid-cols-3">
+            <TabsList className="grid w-full grid-cols-2">
               <TabsTrigger value="products">Productos</TabsTrigger>
               <TabsTrigger value="categories">Categorías</TabsTrigger>
-              <TabsTrigger value="courtesies">Cortesías</TabsTrigger>
             </TabsList>
             
             {/* Productos */}
@@ -622,55 +621,6 @@ const Products = () => {
                             </DropdownMenuItem>
                           </DropdownMenuContent>
                         </DropdownMenu>
-                      </TableCell>
-                    </TableRow>)}
-                </TableBody>
-              </Table>
-            </TabsContent>
-            
-            {/* Cortesías */}
-            <TabsContent value="courtesies">
-              <Table>
-                <TableHeader>
-                  <TableRow>
-                    <TableHead className="w-[48px]">
-                      <Checkbox />
-                    </TableHead>
-                    <TableHead>Producto</TableHead>
-                    <TableHead>Categoría</TableHead>
-                    <TableHead>Máx. por noche</TableHead>
-                    <TableHead>Rangos permitidos</TableHead>
-                    <TableHead>Otorgados hoy</TableHead>
-                    <TableHead>Bar</TableHead>
-                    <TableHead className="text-right">Acciones</TableHead>
-                  </TableRow>
-                </TableHeader>
-                <TableBody>
-                  {courtesiesData.map(item => <TableRow key={item.id}>
-                      <TableCell>
-                        <Checkbox />
-                      </TableCell>
-                      <TableCell className="font-medium">{item.product}</TableCell>
-                      <TableCell>{item.category}</TableCell>
-                      <TableCell>{item.maxPerNight}</TableCell>
-                      <TableCell>
-                        <div className="flex flex-wrap gap-1">
-                          {item.givenByRank.map(rank => <Badge key={rank} variant="secondary" className="text-xs">
-                              {rank}
-                            </Badge>)}
-                        </div>
-                      </TableCell>
-                      <TableCell>
-                        <Badge variant={item.givenToday >= item.maxPerNight ? "destructive" : "outline"}>
-                          {item.givenToday}/{item.maxPerNight}
-                        </Badge>
-                      </TableCell>
-                      <TableCell>{item.bar}</TableCell>
-                      <TableCell className="text-right">
-                        <Button variant="outline" size="sm">
-                          <Edit className="h-4 w-4 mr-2" />
-                          Editar
-                        </Button>
                       </TableCell>
                     </TableRow>)}
                 </TableBody>
